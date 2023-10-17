@@ -63,7 +63,7 @@ class RestrictedSecurity {
         $this->SecurityDescription = $Record[ 'SecurityDescription' ];
         $this->Valoren             = $Record[ 'Valoren' ];
         $this->FollowUpDate        = isset( $Record[ 'FollowUpDate' ] ) ? Carbon::parse( $Record[ 'FollowUpDate' ] ) : NULL;
-        $this->EndDate             = isset( $Record[ 'EndDate' ] ) ? Carbon::parse( $Record[ 'StarEndDatetDate' ] ) : NULL;
+        $this->EndDate             = isset( $Record[ 'EndDate' ] ) ? Carbon::parse( $Record[ 'EndDate' ] ) : NULL;
         $this->ReasonAdded         = $Record[ 'ReasonAdded' ];
         $this->ReasonRemoved       = $Record[ 'ReasonRemoved' ];
         $this->DealId              = $Record[ 'DealId' ];
