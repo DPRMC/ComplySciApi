@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 
 /**
  * @url https://na02.complysci.com/swagger/ui/index
+ * The following URL gets pasted into the INPUT at the top of the URL above.
  * https://na02.complysci.com/swagger/docs/v1
  *
  */
@@ -21,6 +22,8 @@ class ComplySciApiClient {
     public readonly string       $tokenType;
     public readonly int          $expiresIn; // In seconds
     public readonly string       $refreshToken;
+
+    protected bool $debug;
 
 
     public function __construct() {
@@ -41,6 +44,7 @@ class ComplySciApiClient {
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function requestAccessToken( string $username, string $password, bool $debug = FALSE ): void {
+        $this->debug = $debug;
         $PATH        = '/api/oauth2/token';
         $requestPath = $this->_getRequestPath( $PATH );
         $response    = $this->guzzleClient->post( $requestPath, [
@@ -84,10 +88,11 @@ class ComplySciApiClient {
     }
 
 
-    public function requestRestrictedSecurityList( bool $debug = FALSE ) {
+    public function requestAllRestrictedSecurities( bool $debug = FALSE ): array {
+        $this->debug = $debug;
         $this->_confirmWeAreAuthenticated();
 
-        dump( $this->accessToken );
+        $listsByListName = [];
 
         $PATH        = '/api/1/restricted-list';
         $requestPath = $this->_getRequestPath( $PATH );
@@ -98,17 +103,75 @@ class ComplySciApiClient {
             ],
             'json'    => [
                 "CurrentPage"  => 1,
-                "PageSize"     => 100,
+                "PageSize"     => 1,
                 "IsActiveList" => TRUE,
             ],
         ] );
 
-        $Lists = $this->_getArrayFromResponse( $response );
+        $responseAsArray = $this->_getArrayFromResponse( $response );
+
+        $totalCount = $responseAsArray[ 'TotalCount' ];
+        $pageSize   = 100;
+        $numBatches = ceil( $totalCount / $pageSize );
+
+        $this->_debug("Total Count of Restricted Securities: " . $totalCount);
+        $this->_debug("Page Size is: " . $pageSize);
+        $this->_debug("Num Requests/Batches I will ask ComplySci for: " . $numBatches);
 
 
 
-        $restrictedList = new RestrictedList($Lists['Lists'][0]);
+        for ( $i = 1; $i <= $numBatches; $i++ ):
+            $this->_debug("Starting batch " . $i);
+            $response        = $this->guzzleClient->post( $requestPath, [
+                'debug'   => $debug,
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->accessToken,
+                ],
+                'json'    => [
+                    "CurrentPage"  => $i,
+                    "PageSize"     => $pageSize,
+                    "IsActiveList" => FALSE,
+                ],
+            ] );
+            $responseAsArray = $this->_getArrayFromResponse( $response );
+            $lists           = $responseAsArray[ 'Lists' ];
+            /**
+             * $lists =>
+             * 0 => array:10 [
+             * "MonitoringManagingGroups" => " Supervisors, Restricted List Supervision"
+             * "ListName" => "Restricted Securities List"
+             * "ListDescription" => "List updated through FTP"
+             * "CreatedBy" => "ComplySciDeerParkRD"
+             * "CreatedDate" => "2021-08-19T17:09:32.033"
+             * "LastModifiedBy" => "CSIAdmin"
+             * "LastModifiedDate" => "2021-10-12T20:56:21.957"
+             * "IsActive" => true
+             * "VisibleToGroups" => "All Employees"
+             * "Records" => array:100 [
+             * 0 => array:31 [
+             *
+             * @var array $list
+             */
+            foreach ( $lists as $i => $list ):
+                dump($list);
+                $listName = $list[ 'ListName' ];
+                if ( ! isset( $listsByListName[ $listName ] ) ):
+                    $listsByListName[ $listName ] = new RestrictedList( $list );
+                else:
+                    // @var RestrictedList $listsByListName[$listName]
+                    $listsByListName[ $listName ]->parseAndAddRecords( $list[ 'Records' ] );
+                endif;
+            endforeach; // End looping through potentially multiple lists returned in result set.
+        endfor; // End looping through batches.
 
-        dump($restrictedList);
+        return $listsByListName;
+    }
+
+    protected function _debug(string $message=''): void {
+        if( ! $this->debug ):
+            return;
+        endif;
+
+        echo "\n" . $message;
     }
 }

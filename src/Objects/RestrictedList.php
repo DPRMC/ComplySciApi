@@ -33,13 +33,25 @@ class RestrictedList {
         $this->IsActive                 = $List[ 'IsActive' ];
         $this->VisibleToGroups          = $this->_splitCommaDelimitedString( $List[ 'VisibleToGroups' ] ); // Should this be an array?
 
-        $this->_parseRecords( $List[ 'Records' ] );
+        $this->parseAndAddRecords( $List[ 'Records' ] );
     }
 
 
-    protected function _parseRecords( array $Records ): void {
+    /**
+     * @param array $Records
+     * @return void
+     * @throws \Exception
+     */
+    public function parseAndAddRecords( array $Records ): void {
         foreach ( $Records as $unparsedRecord ):
-            $this->Records[] = new RestrictedSecurity( $unparsedRecord );
+            $gkKey = $unparsedRecord[ 'GKKey' ];
+//            if ( isset( $this->Records[ $gkKey ] ) ):
+////                dump( $this->Records[ $gkKey ] );
+////                dump( $unparsedRecord );
+////                throw new \Exception( "This gkKey is already set." );
+//            endif;
+
+            $this->Records[ $gkKey ] = new RestrictedSecurity( $unparsedRecord );
         endforeach;
     }
 
