@@ -3,8 +3,11 @@
 
 class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
-    public static function setUpBeforeClass(): void {
+    public static \DPRMC\ComplySciApi\ComplySciApiClient $client;
 
+    public static function setUpBeforeClass(): void {
+        self::$client = new \DPRMC\ComplySciApi\ComplySciApiClient();
+        self::$client->requestAccessToken( $_ENV[ 'COMPLYSCI_USER' ], $_ENV[ 'COMPLYSCI_PASS' ] );
     }
 
 
@@ -18,25 +21,47 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group auth
      */
     public function testAuthenticateShouldProvideKey() {
-        $client = new \DPRMC\ComplySciApi\ComplySciApiClient();
-        $client->requestAccessToken( $_ENV[ 'COMPLYSCI_USER' ], $_ENV[ 'COMPLYSCI_PASS' ] );
-
-        $this->assertIsString( $client->accessToken );
-        $this->assertIsString( $client->refreshToken );
-        $this->assertIsString( $client->tokenType );
-        $this->assertIsNumeric( $client->expiresIn );
+        $this->assertIsString( self::$client->accessToken );
+        $this->assertIsString( self::$client->refreshToken );
+        $this->assertIsString( self::$client->tokenType );
+        $this->assertIsNumeric( self::$client->expiresIn );
     }
 
 
     /**
      * @test
-     * @group sec_list
+     * @group count
      */
-    public function testGetRestrictedSecurityListShouldReturnArray(){
-        $client = new \DPRMC\ComplySciApi\ComplySciApiClient();
-        $client->requestAccessToken( $_ENV[ 'COMPLYSCI_USER' ], $_ENV[ 'COMPLYSCI_PASS' ] );
+    public function testNumberOfRestrictedSecurityRecordsShouldReturnAnInteger() {
+        $numberOfRestrictedSecurityRecords = self::$client->requestNumberOfRestrictedSecurityRecords( FALSE );
+        $this->assertGreaterThan( 0, $numberOfRestrictedSecurityRecords );
+    }
 
-        $client->requestAllRestrictedSecurities(true);
+
+    /**
+     * @test
+     * @group batch
+     */
+    public function testRequestRestrictedSecuritiesBatchShouldReturnArray() {
+        $listsByName = self::$client->requestRestrictedSecuritiesBatch( 3,
+                                                                        3,
+                                                                        TRUE,
+                                                                        FALSE );
+        $this->assertIsArray( $listsByName );
+    }
+
+
+    /**
+     * @test
+     * @group list
+     */
+    public function testGetRestrictedSecurityListShouldReturnArray() {
+        $listsByName = self::$client->requestRestrictedSecurities( 10,
+                                                                   TRUE,
+                                                                   TRUE );
+
+
+        dump( $listsByName );
     }
 
 

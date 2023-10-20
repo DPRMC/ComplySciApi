@@ -33,26 +33,38 @@ class RestrictedList {
         $this->IsActive                 = $List[ 'IsActive' ];
         $this->VisibleToGroups          = $this->_splitCommaDelimitedString( $List[ 'VisibleToGroups' ] ); // Should this be an array?
 
-        $this->parseAndAddRecords( $List[ 'Records' ] );
+        $this->parseAndAddRecords( $this->ListName, $List[ 'Records' ] );
     }
 
 
     /**
+     * @param string $listName
      * @param array $Records
      * @return void
-     * @throws \Exception
      */
-    public function parseAndAddRecords( array $Records ): void {
+    public function parseAndAddRecords( string $listName, array $Records ): void {
         foreach ( $Records as $unparsedRecord ):
-            $gkKey = $unparsedRecord[ 'GKKey' ];
-//            if ( isset( $this->Records[ $gkKey ] ) ):
-////                dump( $this->Records[ $gkKey ] );
-////                dump( $unparsedRecord );
-////                throw new \Exception( "This gkKey is already set." );
-//            endif;
-
-            $this->Records[ $gkKey ] = new RestrictedSecurity( $unparsedRecord );
+            $uniqueKey                   = $this->getUniqueKeyForRecord( $listName, $unparsedRecord );
+            $this->Records[ $uniqueKey ] = new RestrictedSecurity( $unparsedRecord );
         endforeach;
+    }
+
+
+    /**
+     * From ComplySci:
+     * Unique Identifiers:
+     * List items don’t have record IDs or primary keys.
+     * The system identifies their uniqueness based on Security Identifier + List Name + Start Date.
+     *
+     * @param string $listName
+     * @param array $unparsedRecord
+     * @return string
+     */
+    public function getUniqueKeyForRecord( string $listName, array $unparsedRecord ): string {
+        $securityId = $unparsedRecord[ 'SecurityId' ];
+        $startDate  = substr( $unparsedRecord[ 'StartDate' ], 0, 10 );
+
+        return md5( $securityId . $listName . $startDate );
     }
 
 }
