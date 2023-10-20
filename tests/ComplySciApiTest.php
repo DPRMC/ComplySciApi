@@ -56,12 +56,28 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group list
      */
     public function testGetRestrictedSecurityListShouldReturnArray() {
-        $listsByName = self::$client->requestRestrictedSecurities( 10,
+        $listsByName = self::$client->requestRestrictedSecurities( 10000,
                                                                    TRUE,
                                                                    TRUE );
 
 
-        dump( $listsByName );
+        /**
+         * @var \DPRMC\ComplySciApi\Objects\RestrictedList $list
+         */
+        foreach ( $listsByName as $listName => $list ):
+            dump("\n\n\n\n");
+            dump( $listName );
+            /**
+             * @var \DPRMC\ComplySciApi\Objects\RestrictedSecurity $restrictedSecurity
+             */
+            foreach ( $list->Records as $md5 => $restrictedSecurity ):
+                dump( $restrictedSecurity->Symbol . ' ' . $restrictedSecurity->StartDate->toDateString() . ' ' . $restrictedSecurity->EndDate->toDateString() );
+            endforeach;
+        endforeach;
+
+        foreach ( $listsByName as $listName => $list ):
+            dump( $listName );
+        endforeach;
     }
 
 
