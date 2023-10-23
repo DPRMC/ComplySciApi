@@ -3,6 +3,8 @@
 
 class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
+    const DEBUG = false;
+
     public static \DPRMC\ComplySciApi\ComplySciApiClient $client;
 
     public static function setUpBeforeClass(): void {
@@ -56,29 +58,55 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group list
      */
     public function testGetRestrictedSecurityListShouldReturnArray() {
-        $listsByName = self::$client->requestRestrictedSecurities( 10000,
+        $listsByName = self::$client->requestRestrictedSecurities( null,
+                                                                   10000,
                                                                    TRUE,
-                                                                   TRUE );
+                                                                   self::DEBUG );
 
+        $this->assertIsArray($listsByName);
 
-        /**
-         * @var \DPRMC\ComplySciApi\Objects\RestrictedList $list
-         */
-        foreach ( $listsByName as $listName => $list ):
-            dump("\n\n\n\n");
-            dump( $listName );
-            /**
-             * @var \DPRMC\ComplySciApi\Objects\RestrictedSecurity $restrictedSecurity
-             */
-            foreach ( $list->Records as $md5 => $restrictedSecurity ):
-                dump( $restrictedSecurity->Symbol . ' ' . $restrictedSecurity->StartDate->toDateString() . ' ' . $restrictedSecurity->EndDate->toDateString() );
-            endforeach;
-        endforeach;
-
-        foreach ( $listsByName as $listName => $list ):
-            dump( $listName );
-        endforeach;
+//
+//        /**
+//         * @var \DPRMC\ComplySciApi\Objects\RestrictedList $list
+//         */
+//        foreach ( $listsByName as $listName => $list ):
+//            dump( "\n\n\n\n" );
+//            dump( "LIOST NAME: " . $listName );
+//            /**
+//             * @var \DPRMC\ComplySciApi\Objects\RestrictedSecurity $restrictedSecurity
+//             */
+//            foreach ( $list->Records as $md5 => $restrictedSecurity ):
+//                $startDate = 'null';
+//                $endDate   = 'null';
+//                if ( $restrictedSecurity->StartDate ):
+//                    $startDate = $restrictedSecurity->StartDate->toDateString();
+//                endif;
+//
+//                if ( $restrictedSecurity->EndDate ):
+//                    $endDate = $restrictedSecurity->EndDate->toDateString();
+//                endif;
+//                dump( $restrictedSecurity->Symbol . ' [' . $startDate . '] [' . $endDate . ']' );
+//            endforeach;
+//        endforeach;
+//
+//
+//        dump( 'LIST NAMES: ' . "\n\n" );
+//        foreach ( $listsByName as $listName => $list ):
+//            dump( $listName );
+//        endforeach;
     }
 
+
+    /**
+     * @test
+     * @group listname
+     */
+    public function testGetRestrictedSecurityListByNameShouldReturnArray() {
+        $listsByName = self::$client->requestRestrictedSecurities( 'Restricted Securities List',
+                                                                   10000,
+                                                                   true,
+                                                                   self::DEBUG );
+        $this->assertIsArray( $listsByName );
+    }
 
 }

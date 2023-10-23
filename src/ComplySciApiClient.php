@@ -150,7 +150,7 @@ class ComplySciApiClient {
 
 
     /**
-     *
+     * @param string|NULL $listName
      * @param int $currentPage
      * @param int $pageSize
      * @param bool $isActiveList
@@ -159,7 +159,11 @@ class ComplySciApiClient {
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function requestRestrictedSecuritiesBatch( int $currentPage, int $pageSize = self::DEFAULT_PAGE_SIZE, bool $isActiveList = TRUE, bool $debug = FALSE ): array {
+    public function requestRestrictedSecuritiesBatch( string $listName = NULL,
+                                                      int    $currentPage = 1,
+                                                      int    $pageSize = self::DEFAULT_PAGE_SIZE,
+                                                      bool   $isActiveList = TRUE,
+                                                      bool   $debug = FALSE ): array {
         $this->debug = $debug;
         $this->_confirmWeAreAuthenticated();
 
@@ -168,16 +172,22 @@ class ComplySciApiClient {
         // Get the number of total records available to us.
         $PATH        = '/api/1/restricted-list';
         $requestPath = $this->_getRequestPath( $PATH );
-        $response    = $this->guzzleClient->post( $requestPath, [
+
+        $jsonOptions = [
+            "CurrentPage"  => $currentPage,
+            "PageSize"     => $pageSize,
+            "IsActiveList" => $isActiveList,
+        ];
+        if ( $listName ):
+            $jsonOptions[ 'ListName' ] = $listName;
+        endif;
+
+        $response = $this->guzzleClient->post( $requestPath, [
             'debug'   => FALSE,
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->accessToken,
             ],
-            'json'    => [
-                "CurrentPage"  => $currentPage,
-                "PageSize"     => $pageSize,
-                "IsActiveList" => $isActiveList,
-            ],
+            'json'    => $jsonOptions,
         ] );
 
         $responseAsArray = $this->_getArrayFromResponse( $response );
@@ -215,9 +225,6 @@ class ComplySciApiClient {
             endif;
 
             $this->_debug( "There are now this many records in that list: " . count( $listsByListName[ $listName ]->Records ) );
-
-            $this->_debug( " current count of LISTS by name: " . count( $listsByListName ) );
-            $this->_debug( " recursive count: " . count( $listsByListName, COUNT_RECURSIVE ) );
         endforeach; // End looping through potentially multiple lists returned in result set.
 
         return $listsByListName;
@@ -225,6 +232,7 @@ class ComplySciApiClient {
 
 
     /**
+     * @param string|NULL $listName
      * @param int|NULL $limit
      * @param bool $isActiveList
      * @param bool $debug
@@ -232,8 +240,11 @@ class ComplySciApiClient {
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function requestRestrictedSecurities( int $limit = NULL, bool $isActiveList = TRUE, bool $debug = FALSE ): array {
-        $pageSize   = self::DEFAULT_PAGE_SIZE;
+    public function requestRestrictedSecurities( string $listName = NULL,
+                                                 int    $limit = NULL,
+                                                 bool   $isActiveList = TRUE,
+                                                 bool   $debug = FALSE ): array {
+        $pageSize    = self::DEFAULT_PAGE_SIZE;
         $this->debug = $debug;
         $this->_confirmWeAreAuthenticated();
 
@@ -244,7 +255,7 @@ class ComplySciApiClient {
         // If a limit was passed in, determine if we need to set it here.
         if ( $limit && $totalCount > $limit ):
             $this->_debug( "This method was called with a limit which is less than the total number of records available to get, which was " . $totalCount );
-            $this->_debug(" So I will only get " . $limit . " records from ComplySci now.");
+            $this->_debug( " So I will only get " . $limit . " records from ComplySci now." );
             $totalCount = $limit;
         endif;
 
@@ -252,9 +263,9 @@ class ComplySciApiClient {
         /**
          *
          */
-        if( $pageSize > $totalCount):
-            $this->_debug("The default page size is greater than the total count of securities we are going to request.");
-            $this->_debug("So I am going to set the page size equal to the total count, so we get them all in one batch.");
+        if ( $pageSize > $totalCount ):
+            $this->_debug( "The default page size is greater than the total count of securities we are going to request." );
+            $this->_debug( "So I am going to set the page size equal to the total count, so we get them all in one batch." );
             $pageSize = $totalCount;
         endif;
 
@@ -269,13 +280,16 @@ class ComplySciApiClient {
         for ( $i = 1; $i <= $numBatches; $i++ ):
             $this->_debug( "----- Processing batch " . $i );
             $this->_debug( "Page size is " . $pageSize );
-            $newListsByListName = $this->requestRestrictedSecuritiesBatch( $i, $pageSize, $isActiveList, $debug );
-            $listsByListName = array_merge_recursive( $listsByListName, $newListsByListName );
+            $newListsByListName = $this->requestRestrictedSecuritiesBatch( $listName,
+                                                                           $i,
+                                                                           $pageSize,
+                                                                           $isActiveList,
+                                                                           $debug );
+            $listsByListName    = array_merge_recursive( $listsByListName, $newListsByListName );
         endfor; // End looping through batches.
 
         return $listsByListName;
     }
-
 
 
 }
