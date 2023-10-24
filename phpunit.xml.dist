@@ -36,6 +36,8 @@
     <php>
         <env name="COMPLYSCI_USER" value="user"/>
         <env name="COMPLYSCI_PASS" value="pass"/>
+        <env name="DEV_COMPLYSCI_USER" value="devuser"/>
+        <env name="DEV_COMPLYSCI_PASS" value="devpass"/>
     </php>
 
 </phpunit>

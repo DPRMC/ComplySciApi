@@ -120,7 +120,6 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
                                                                    true,
                                                                    true);
 
-        dump($ResultSet);
         $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
     }
 
