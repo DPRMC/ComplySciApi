@@ -21,31 +21,42 @@ class RestrictedList {
     public array           $Records;
 
 
-    public function __construct( array $List ) {
+    public function __construct( array $list ) {
 
-        $this->MonitoringManagingGroups = $this->_splitCommaDelimitedString( $List[ 'MonitoringManagingGroups' ] );
-        $this->ListName                 = $List[ 'ListName' ];
-        $this->ListDescription          = $List[ 'ListDescription' ];
-        $this->CreatedBy                = $List[ 'CreatedBy' ];
-        $this->CreatedDate              = Carbon::parse( $List[ 'CreatedDate' ] );
-        $this->LastModifiedBy           = $List[ 'LastModifiedBy' ];
-        $this->LastModifiedDate         = Carbon::parse( $List[ 'LastModifiedDate' ] );
-        $this->IsActive                 = $List[ 'IsActive' ];
-        $this->VisibleToGroups          = $this->_splitCommaDelimitedString( $List[ 'VisibleToGroups' ] ); // Should this be an array?
+        $this->MonitoringManagingGroups = $this->_splitCommaDelimitedString( $list[ 'MonitoringManagingGroups' ] );
+        $this->ListName                 = $list[ 'ListName' ];
+        $this->ListDescription          = $list[ 'ListDescription' ];
+        $this->CreatedBy                = $list[ 'CreatedBy' ];
+        $this->CreatedDate              = Carbon::parse( $list[ 'CreatedDate' ] );
+        $this->LastModifiedBy           = $list[ 'LastModifiedBy' ];
+        $this->LastModifiedDate         = Carbon::parse( $list[ 'LastModifiedDate' ] );
+        $this->IsActive                 = $list[ 'IsActive' ];
+        $this->VisibleToGroups          = $this->_splitCommaDelimitedString( $list[ 'VisibleToGroups' ] ); // Should this be an array?
 
-        $this->parseAndAddRecords( $this->ListName, $List[ 'Records' ] );
+        $records = [];
+        foreach ( $list[ 'Records' ] as $record ):
+            $RestrictedSecurity = new RestrictedSecurity( $record );
+            $uniqueId           = $RestrictedSecurity->getUniqueKeyForRecord( $list[ 'ListName' ] );
+            $records[$uniqueId] = $RestrictedSecurity;
+        endforeach;
+
+        $this->parseAndAddRecords( $this->ListName, $records );
     }
 
 
     /**
      * @param string $listName
-     * @param array $Records
+     * @param RestrictedSecurity[] $Records
      * @return void
      */
     public function parseAndAddRecords( string $listName, array $Records ): void {
-        foreach ( $Records as $unparsedRecord ):
-            $uniqueKey                   = $this->getUniqueKeyForRecord( $listName, $unparsedRecord );
-            $this->Records[ $uniqueKey ] = new RestrictedSecurity( $unparsedRecord );
+
+        /**
+         * @var RestrictedSecurity $SecurityRecord
+         */
+        foreach ( $Records as $SecurityRecord ):
+            $uniqueKey                   = $SecurityRecord->getUniqueKeyForRecord( $listName );
+            $this->Records[ $uniqueKey ] = $SecurityRecord;
         endforeach;
     }
 
@@ -57,14 +68,18 @@ class RestrictedList {
      * The system identifies their uniqueness based on Security Identifier + List Name + Start Date.
      *
      * @param string $listName
-     * @param array $unparsedRecord
+     * @param RestrictedSecurity $RestrictedSecurity
      * @return string
      */
-    public function getUniqueKeyForRecord( string $listName, array $unparsedRecord ): string {
-        $securityId = $unparsedRecord[ 'SecurityId' ];
-        $startDate  = substr( $unparsedRecord[ 'StartDate' ], 0, 10 );
+//    public function getUniqueKeyForRecord( string $listName, RestrictedSecurity $RestrictedSecurity ): string {
+//        $securityId = $RestrictedSecurity->SecurityId;
+//        $startDate  = $RestrictedSecurity->StartDate->toDateString();
+//
+//        return md5( $securityId . $listName . $startDate );
+//    }
 
-        return md5( $securityId . $listName . $startDate );
+    public function numRecords(): int {
+        return count( $this->Records );
     }
 
 }

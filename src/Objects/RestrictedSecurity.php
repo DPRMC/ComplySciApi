@@ -43,38 +43,47 @@ class RestrictedSecurity {
 
 
     /**
-     * @param array $Record
+     * @param array $record
      */
-    public function __construct( array $Record ) {
-        $this->StartDate           = isset( $Record[ 'StartDate' ] ) ? Carbon::parse( $Record[ 'StartDate' ] ) : NULL;
-        $this->EffectiveTime       = $Record[ 'EffectiveTime' ];
-        $this->ExpirationTime      = $Record[ 'ExpirationTime' ];
-        $this->MonitoredBy         = $Record[ 'MonitoredBy' ];
-        $this->GKKey               = $Record[ 'GKKey' ];
-        $this->Industry            = $Record[ 'Industry' ];
-        $this->SupervisorNote      = $Record[ 'SupervisorNote' ];
-        $this->Symbol              = $Record[ 'Symbol' ];
-        $this->CUSIP               = $Record[ 'CUSIP' ];
-        $this->ISIN                = $Record[ 'ISIN' ];
-        $this->RestrictedGroups    = $Record[ 'RestrictedGroups' ];
-        $this->RestrictedUsers     = $Record[ 'RestrictedUsers' ];
-        $this->CompanyName         = $Record[ 'CompanyName' ];
-        $this->SecurityType        = $Record[ 'SecurityType' ];
-        $this->SecurityDescription = $Record[ 'SecurityDescription' ];
-        $this->Valoren             = $Record[ 'Valoren' ];
-        $this->FollowUpDate        = isset( $Record[ 'FollowUpDate' ] ) ? Carbon::parse( $Record[ 'FollowUpDate' ] ) : NULL;
-        $this->EndDate             = isset( $Record[ 'EndDate' ] ) ? Carbon::parse( $Record[ 'EndDate' ] ) : NULL;
-        $this->ReasonAdded         = $Record[ 'ReasonAdded' ];
-        $this->ReasonRemoved       = $Record[ 'ReasonRemoved' ];
-        $this->DealId              = $Record[ 'DealId' ];
-        $this->CustomField01       = $Record[ 'CustomField01' ];
-        $this->CustomField02       = $Record[ 'CustomField02' ];
-        $this->CustomField03       = $Record[ 'CustomField03' ];
-        $this->CustomField04       = $Record[ 'CustomField04' ];
-        $this->CustomField05       = $Record[ 'CustomField05' ];
-        $this->CustomField06       = $Record[ 'CustomField06' ];
-        $this->CustomField07       = $Record[ 'CustomField07' ];
-        $this->CustomField08       = $Record[ 'CustomField08' ];
+    public function __construct( array $record ) {
+        $this->SecurityId          = $record[ 'SecurityId' ];
+        $this->StartDate           = isset( $record[ 'StartDate' ] ) ? Carbon::parse( $record[ 'StartDate' ] ) : NULL;
+        $this->EffectiveTime       = $record[ 'EffectiveTime' ];
+        $this->ExpirationTime      = $record[ 'ExpirationTime' ];
+        $this->MonitoredBy         = $record[ 'MonitoredBy' ];
+        $this->GKKey               = $record[ 'GKKey' ];
+        $this->Industry            = $record[ 'Industry' ];
+        $this->SupervisorNote      = $record[ 'SupervisorNote' ];
+        $this->Symbol              = $record[ 'Symbol' ];
+        $this->CUSIP               = $record[ 'CUSIP' ];
+        $this->ISIN                = $record[ 'ISIN' ];
+        $this->RestrictedGroups    = $record[ 'RestrictedGroups' ];
+        $this->RestrictedUsers     = $record[ 'RestrictedUsers' ];
+        $this->CompanyName         = $record[ 'CompanyName' ];
+        $this->SecurityType        = $record[ 'SecurityType' ];
+        $this->SecurityDescription = $record[ 'SecurityDescription' ];
+        $this->Valoren             = $record[ 'Valoren' ];
+        $this->FollowUpDate        = isset( $record[ 'FollowUpDate' ] ) ? Carbon::parse( $record[ 'FollowUpDate' ] ) : NULL;
+        $this->EndDate             = isset( $record[ 'EndDate' ] ) ? Carbon::parse( $record[ 'EndDate' ] ) : NULL;
+        $this->ReasonAdded         = $record[ 'ReasonAdded' ];
+        $this->ReasonRemoved       = $record[ 'ReasonRemoved' ];
+        $this->DealId              = $record[ 'DealId' ];
+        $this->CustomField01       = $record[ 'CustomField01' ];
+        $this->CustomField02       = $record[ 'CustomField02' ];
+        $this->CustomField03       = $record[ 'CustomField03' ];
+        $this->CustomField04       = $record[ 'CustomField04' ];
+        $this->CustomField05       = $record[ 'CustomField05' ];
+        $this->CustomField06       = $record[ 'CustomField06' ];
+        $this->CustomField07       = $record[ 'CustomField07' ];
+        $this->CustomField08       = $record[ 'CustomField08' ];
+    }
+
+
+    public function getUniqueKeyForRecord( string $listName ): string {
+        $securityId = $this->SecurityId;
+        $startDate  = $this->StartDate->toDateString();
+
+        return md5( $securityId . $listName . $startDate );
     }
 
 }

@@ -45,11 +45,11 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group batch
      */
     public function testRequestRestrictedSecuritiesBatchShouldReturnArray() {
-        $listsByName = self::$client->requestRestrictedSecuritiesBatch( 3,
+        $ResultSet = self::$client->requestRestrictedSecuritiesBatch( 3,
                                                                         3,
                                                                         TRUE,
                                                                         FALSE );
-        $this->assertIsArray( $listsByName );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
     }
 
 
@@ -58,12 +58,12 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group list
      */
     public function testGetRestrictedSecurityListShouldReturnArray() {
-        $listsByName = self::$client->requestRestrictedSecurities( null,
+        $ResultSet = self::$client->requestRestrictedSecurities( null,
                                                                    10000,
                                                                    TRUE,
                                                                    self::DEBUG );
 
-        $this->assertIsArray($listsByName);
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
 
 //
 //        /**
@@ -102,11 +102,26 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group listname
      */
     public function testGetRestrictedSecurityListByNameShouldReturnArray() {
-        $listsByName = self::$client->requestRestrictedSecurities( 'Restricted Securities List',
+        $ResultSet = self::$client->requestRestrictedSecurities( 'Restricted Securities List',
                                                                    10000,
                                                                    true,
                                                                    self::DEBUG );
-        $this->assertIsArray( $listsByName );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
+    }
+
+
+    /**
+     * @test
+     * @group approved
+     */
+    public function testGetApprovedSecurityListByNameShouldReturnArray() {
+        $ResultSet = self::$client->requestRestrictedSecurities( 'Approved Securities List',
+                                                                   null,
+                                                                   true,
+                                                                   true);
+
+        dump($ResultSet);
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
     }
 
 }
