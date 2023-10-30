@@ -187,62 +187,10 @@ class ComplySciApiClient {
      * @param int|NULL $limit
      * @param bool $isActiveList
      * @param bool $debug
-     * @return array
+     * @return ResultSet
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-//    public function requestRestrictedSecurities( string $listName = NULL,
-//                                                 int    $limit = NULL,
-//                                                 bool   $isActiveList = TRUE,
-//                                                 bool   $debug = FALSE ): array {
-//        $pageSize    = self::DEFAULT_PAGE_SIZE;
-//        $this->debug = $debug;
-//        $this->_confirmWeAreAuthenticated();
-//
-//        $listsByListName = [];
-//
-//        $totalCount = $this->requestNumberOfRestrictedSecurityRecords( $debug );
-//
-//        // If a limit was passed in, determine if we need to set it here.
-//        if ( $limit && $totalCount > $limit ):
-//            $this->_debug( "This method was called with a limit which is less than the total number of records available to get, which was " . $totalCount );
-//            $this->_debug( " So I will only get " . $limit . " records from ComplySci now." );
-//            $totalCount = $limit;
-//        endif;
-//
-//
-//        /**
-//         *
-//         */
-//        if ( $pageSize > $totalCount ):
-//            $this->_debug( "The default page size is greater than the total count of securities we are going to request." );
-//            $this->_debug( "So I am going to set the page size equal to the total count, so we get them all in one batch." );
-//            $pageSize = $totalCount;
-//        endif;
-//
-//
-//        $numBatches = ceil( $totalCount / $pageSize );
-//
-//        $this->_debug( "Total Count of Restricted Securities: " . $totalCount );
-//        $this->_debug( "Page Size is: " . $pageSize );
-//        $this->_debug( "Num Requests/Batches I will ask ComplySci for: " . $numBatches );
-//
-//
-//        for ( $i = 1; $i <= $numBatches; $i++ ):
-//            $this->_debug( "----- Processing batch " . $i );
-//            $this->_debug( "Page size is " . $pageSize );
-//            $newListsByListName = $this->requestRestrictedSecuritiesBatch( $listName,
-//                                                                           $i,
-//                                                                           $pageSize,
-//                                                                           $isActiveList,
-//                                                                           $debug );
-//            $listsByListName    = array_merge_recursive( $listsByListName, $newListsByListName );
-//        endfor; // End looping through batches.
-//
-//        return $listsByListName;
-//    }
-
-
     public function requestRestrictedSecurities( string $listName = NULL,
                                                  int    $limit = NULL,
                                                  bool   $isActiveList = TRUE,
