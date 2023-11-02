@@ -46,36 +46,36 @@ class RestrictedSecurity {
      * @param array $record
      */
     public function __construct( array $record ) {
-        $this->SecurityId          = $record[ 'SecurityId' ];
+        $this->SecurityId          = $record[ 'SecurityId' ] ?? NULL;
         $this->StartDate           = isset( $record[ 'StartDate' ] ) ? Carbon::parse( $record[ 'StartDate' ] ) : NULL;
-        $this->EffectiveTime       = $record[ 'EffectiveTime' ];
-        $this->ExpirationTime      = $record[ 'ExpirationTime' ];
-        $this->MonitoredBy         = $record[ 'MonitoredBy' ];
-        $this->GKKey               = $record[ 'GKKey' ];
-        $this->Industry            = $record[ 'Industry' ];
-        $this->SupervisorNote      = $record[ 'SupervisorNote' ];
-        $this->Symbol              = $record[ 'Symbol' ];
-        $this->CUSIP               = $record[ 'CUSIP' ];
-        $this->ISIN                = $record[ 'ISIN' ];
-        $this->RestrictedGroups    = $record[ 'RestrictedGroups' ];
-        $this->RestrictedUsers     = $record[ 'RestrictedUsers' ];
-        $this->CompanyName         = $record[ 'CompanyName' ];
-        $this->SecurityType        = $record[ 'SecurityType' ];
-        $this->SecurityDescription = $record[ 'SecurityDescription' ];
-        $this->Valoren             = $record[ 'Valoren' ];
+        $this->EffectiveTime       = $record[ 'EffectiveTime' ] ?? NULL;
+        $this->ExpirationTime      = $record[ 'ExpirationTime' ] ?? NULL;
+        $this->MonitoredBy         = $record[ 'MonitoredBy' ] ?? NULL;
+        $this->GKKey               = $record[ 'GKKey' ] ?? NULL;
+        $this->Industry            = $record[ 'Industry' ] ?? NULL;
+        $this->SupervisorNote      = $record[ 'SupervisorNote' ] ?? NULL;
+        $this->Symbol              = $record[ 'Symbol' ] ?? NULL;
+        $this->CUSIP               = $record[ 'CUSIP' ] ?? NULL;
+        $this->ISIN                = $record[ 'ISIN' ] ?? NULL;
+        $this->RestrictedGroups    = $record[ 'RestrictedGroups' ] ?? NULL;
+        $this->RestrictedUsers     = $record[ 'RestrictedUsers' ] ?? NULL;
+        $this->CompanyName         = $record[ 'CompanyName' ] ?? NULL;
+        $this->SecurityType        = $record[ 'SecurityType' ] ?? NULL;
+        $this->SecurityDescription = $record[ 'SecurityDescription' ] ?? NULL;
+        $this->Valoren             = $record[ 'Valoren' ] ?? NULL;
         $this->FollowUpDate        = isset( $record[ 'FollowUpDate' ] ) ? Carbon::parse( $record[ 'FollowUpDate' ] ) : NULL;
         $this->EndDate             = isset( $record[ 'EndDate' ] ) ? Carbon::parse( $record[ 'EndDate' ] ) : NULL;
-        $this->ReasonAdded         = $record[ 'ReasonAdded' ];
-        $this->ReasonRemoved       = $record[ 'ReasonRemoved' ];
-        $this->DealId              = $record[ 'DealId' ];
-        $this->CustomField01       = $record[ 'CustomField01' ];
-        $this->CustomField02       = $record[ 'CustomField02' ];
-        $this->CustomField03       = $record[ 'CustomField03' ];
-        $this->CustomField04       = $record[ 'CustomField04' ];
-        $this->CustomField05       = $record[ 'CustomField05' ];
-        $this->CustomField06       = $record[ 'CustomField06' ];
-        $this->CustomField07       = $record[ 'CustomField07' ];
-        $this->CustomField08       = $record[ 'CustomField08' ];
+        $this->ReasonAdded         = $record[ 'ReasonAdded' ] ?? NULL;
+        $this->ReasonRemoved       = $record[ 'ReasonRemoved' ] ?? NULL;
+        $this->DealId              = $record[ 'DealId' ] ?? NULL;
+        $this->CustomField01       = $record[ 'CustomField01' ] ?? NULL;
+        $this->CustomField02       = $record[ 'CustomField02' ] ?? NULL;
+        $this->CustomField03       = $record[ 'CustomField03' ] ?? NULL;
+        $this->CustomField04       = $record[ 'CustomField04' ] ?? NULL;
+        $this->CustomField05       = $record[ 'CustomField05' ] ?? NULL;
+        $this->CustomField06       = $record[ 'CustomField06' ] ?? NULL;
+        $this->CustomField07       = $record[ 'CustomField07' ] ?? NULL;
+        $this->CustomField08       = $record[ 'CustomField08' ] ?? NULL;
     }
 
 

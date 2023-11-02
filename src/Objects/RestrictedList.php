@@ -9,16 +9,16 @@ class RestrictedList {
 
     use DataCleanerTrait;
 
-    public readonly array  $MonitoringManagingGroups;
-    public readonly string $ListName;
-    public readonly string $ListDescription;
-    public readonly string $CreatedBy;
-    public readonly Carbon $CreatedDate;
-    public readonly string $LastModifiedBy;
-    public readonly Carbon $LastModifiedDate;
-    public readonly bool   $IsActive;
-    public readonly array  $VisibleToGroups;
-    public array           $Records;
+    public readonly ?array  $MonitoringManagingGroups;
+    public readonly ?string $ListName;
+    public readonly ?string $ListDescription;
+    public readonly ?string $CreatedBy;
+    public readonly ?Carbon $CreatedDate;
+    public readonly ?string $LastModifiedBy;
+    public readonly ?Carbon $LastModifiedDate;
+    public readonly ?bool   $IsActive;
+    public readonly ?array  $VisibleToGroups;
+    public ?array           $Records;
 
 
     public function __construct( array $list ) {

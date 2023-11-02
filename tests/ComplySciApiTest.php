@@ -3,13 +3,14 @@
 
 class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
-    const DEBUG = false;
+    const DEBUG = FALSE;
 
     public static \DPRMC\ComplySciApi\ComplySciApiClient $client;
 
     public static function setUpBeforeClass(): void {
         self::$client = new \DPRMC\ComplySciApi\ComplySciApiClient();
-        self::$client->requestAccessToken( $_ENV[ 'COMPLYSCI_USER' ], $_ENV[ 'COMPLYSCI_PASS' ] );
+        //self::$client->requestAccessToken( $_ENV[ 'COMPLYSCI_USER' ], $_ENV[ 'COMPLYSCI_PASS' ] );
+        self::$client->requestAccessToken( $_ENV[ 'DEV_COMPLYSCI_USER' ], $_ENV[ 'DEV_COMPLYSCI_PASS' ] );
     }
 
 
@@ -45,11 +46,13 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group batch
      */
     public function testRequestRestrictedSecuritiesBatchShouldReturnArray() {
-        $ResultSet = self::$client->requestRestrictedSecuritiesBatch( 3,
-                                                                        3,
-                                                                        TRUE,
-                                                                        FALSE );
-        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
+        $ResultSet = self::$client->requestRestrictedSecuritiesBatch( 'Restricted Securities',
+                                                                      1,
+                                                                      1,
+                                                                      FALSE,
+                                                                      self::DEBUG );
+
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities::class, $ResultSet );
     }
 
 
@@ -58,12 +61,12 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group list
      */
     public function testGetRestrictedSecurityListShouldReturnArray() {
-        $ResultSet = self::$client->requestRestrictedSecurities( null,
-                                                                   10000,
-                                                                   TRUE,
-                                                                   self::DEBUG );
+        $ResultSet = self::$client->requestRestrictedSecurities( NULL,
+                                                                 10,
+                                                                 TRUE,
+                                                                 self::DEBUG );
 
-        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities::class, $ResultSet );
 
 //
 //        /**
@@ -99,28 +102,43 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * @test
-     * @group listname
+     * @group insert
      */
-    public function testGetRestrictedSecurityListByNameShouldReturnArray() {
-        $ResultSet = self::$client->requestRestrictedSecurities( 'Restricted Securities List',
-                                                                   10000,
-                                                                   true,
-                                                                   self::DEBUG );
-        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
-    }
+    public function testInsertRestrictedSecurities() {
+
+        $listName             = 'Restricted List';
+        $restrictedSecurities = [];
+        $listAdministrator    = 'mdrennen@deerparkrd.com';
+        $groups               = [ 'All Employees' ];
+        $employees            = [];
+
+        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( 'AAPL',
+                                                                                                                  \Carbon\Carbon::today(),
+                                                                                                                  $listName,
+                                                                                                                  $listAdministrator,
+                                                                                                                  $groups );
+
+        try {
+            $responseInsertedRestrictedSecurities = self::$client->requestInsertRestrictedSecurities( $restrictedSecurities,
+                                                                                                      self::DEBUG );
+
+            $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities::class,
+                                     $responseInsertedRestrictedSecurities );
+
+            $this->assertIsInt( $responseInsertedRestrictedSecurities->totalCount );
+            $this->assertGreaterThan( 0, $responseInsertedRestrictedSecurities->totalCount );
+        } catch ( GuzzleHttp\Exception\ClientException $e ) {
+            $response             = $e->getResponse();
+            $responseBodyAsString = $response->getBody()->getContents();
+            dump( $responseBodyAsString );
+        }
 
 
-    /**
-     * @test
-     * @group approved
-     */
-    public function testGetApprovedSecurityListByNameShouldReturnArray() {
-        $ResultSet = self::$client->requestRestrictedSecurities( 'Approved Securities List',
-                                                                   null,
-                                                                   true,
-                                                                   true);
+        $ResponseGetRestrictedSecurities = self::$client->requestRestrictedSecurities( $listName, NULL, TRUE, self::DEBUG );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities::class,
+                                 $ResponseGetRestrictedSecurities );
+        $this->assertGreaterThan( 0, $ResponseGetRestrictedSecurities->numSecuritiesInAllLists() );
 
-        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResultSet::class, $ResultSet );
     }
 
 }

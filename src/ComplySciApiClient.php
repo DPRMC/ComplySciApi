@@ -4,9 +4,12 @@ namespace DPRMC\ComplySciApi;
 
 use DPRMC\ComplySciApi\Exceptions\NotAuthenticatedException;
 use DPRMC\ComplySciApi\Objects\DebugTrait;
-use DPRMC\ComplySciApi\Objects\RestrictedList;
-use DPRMC\ComplySciApi\Objects\ResultSet;
+use DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity;
+use DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities;
+use DPRMC\ComplySciApi\Objects\RestrictedSecurity;
+use DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities;
 use Psr\Http\Message\ResponseInterface;
+
 
 /**
  * @url https://na02.complysci.com/swagger/ui/index
@@ -143,7 +146,7 @@ class ComplySciApiClient {
      * @param int $pageSize
      * @param bool $isActiveList
      * @param bool $debug
-     * @return ResultSet
+     * @return ResponseGetRestrictedSecurities
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -151,7 +154,7 @@ class ComplySciApiClient {
                                                       int    $currentPage = 1,
                                                       int    $pageSize = self::DEFAULT_PAGE_SIZE,
                                                       bool   $isActiveList = TRUE,
-                                                      bool   $debug = FALSE ): ResultSet {
+                                                      bool   $debug = FALSE ): ResponseGetRestrictedSecurities {
         $this->debug = $debug;
         $this->_confirmWeAreAuthenticated();
 
@@ -178,7 +181,7 @@ class ComplySciApiClient {
 
         $responseAsArray = $this->_getArrayFromResponse( $response );
 
-        return new ResultSet( $responseAsArray );
+        return new ResponseGetRestrictedSecurities( $responseAsArray );
     }
 
 
@@ -187,19 +190,19 @@ class ComplySciApiClient {
      * @param int|NULL $limit
      * @param bool $isActiveList
      * @param bool $debug
-     * @return ResultSet
+     * @return ResponseGetRestrictedSecurities
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function requestRestrictedSecurities( string $listName = NULL,
                                                  int    $limit = NULL,
                                                  bool   $isActiveList = TRUE,
-                                                 bool   $debug = FALSE ): ResultSet {
+                                                 bool   $debug = FALSE ): ResponseGetRestrictedSecurities {
         $pageSize    = self::DEFAULT_PAGE_SIZE;
         $this->debug = $debug;
         $this->_confirmWeAreAuthenticated();
 
-        $ResultSet = new ResultSet();
+        $ResultSet = new ResponseGetRestrictedSecurities();
 
         $runAnotherBatch = TRUE;
         $i               = 1;
@@ -226,6 +229,40 @@ class ComplySciApiClient {
 
 
         return $ResultSet;
+    }
+
+
+    /**
+     * @param InsertableRestrictedSecurity[] $restrictedSecurities
+     * @param bool $debug
+     * @return ResponseInsertedRestrictedSecurities
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestInsertRestrictedSecurities( array $restrictedSecurities, bool $debug = FALSE ): ResponseInsertedRestrictedSecurities {
+        $this->_confirmWeAreAuthenticated();
+
+        // Get the number of total records available to us.
+        $PATH        = '/api/1/restricted-list/insert';
+        $requestPath = $this->_getRequestPath( $PATH );
+
+        $arrayOfRestrictedSecurities = InsertableRestrictedSecurity::getArrayOfRestrictedSecuritiesToInsert($restrictedSecurities);
+
+        $jsonOptions = [
+            "Records" => $arrayOfRestrictedSecurities,
+        ];
+
+        $response = $this->guzzleClient->post( $requestPath, [
+            'debug'   => $debug,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->accessToken,
+            ],
+            'json'    => $jsonOptions,
+        ] );
+
+        $responseAsArray = $this->_getArrayFromResponse( $response );
+
+        return new ResponseInsertedRestrictedSecurities( $responseAsArray );
     }
 
 }

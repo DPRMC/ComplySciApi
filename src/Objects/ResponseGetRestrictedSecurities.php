@@ -9,14 +9,14 @@ use Carbon\Carbon;
 /**
  * This object contains the RestrictedLists in an array, and has some helper functions to count records in those Lists.
  */
-class ResultSet {
+class ResponseGetRestrictedSecurities {
 
     use DebugTrait;
 
     /**
      * @var RestrictedList[]
      */
-    public array $Lists;
+    public array $Lists = [];
 
 
     /**
@@ -51,7 +51,7 @@ class ResultSet {
          * @var array $list Format shown in the comment above
          */
         foreach ( $lists as $i => $list ):
-            $listName = $list[ 'ListName' ];
+            $listName       = $list[ 'ListName' ];
             $RestrictedList = new RestrictedList( $list );
             $this->_debug( "List (" . $i . ") is " . $listName );
             if ( ! isset( $this->Lists[ $listName ] ) ):
@@ -69,10 +69,10 @@ class ResultSet {
 
 
     /**
-     * @param ResultSet $ResultSet
+     * @param ResponseGetRestrictedSecurities $ResultSet
      * @return $this
      */
-    public function mergeResultSet( ResultSet $ResultSet ): ResultSet {
+    public function mergeResultSet( ResponseGetRestrictedSecurities $ResultSet ): ResponseGetRestrictedSecurities {
         /**
          * @var $RestrictedList $RestrictedList
          */
