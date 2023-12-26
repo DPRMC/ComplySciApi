@@ -141,4 +141,18 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
     }
 
+
+
+
+    // Security Search
+
+    /**
+     * @test
+     * @group search
+     */
+    public function testRequestSecuritySearch() {
+        $ResponseSecurityLookup = self::$client->requestSecurityLookupByTickers( ['AAPL','TSLA'] );
+        $this->assertInstanceOf(\DPRMC\ComplySciApi\Objects\ResponseSecurityLookup::class, $ResponseSecurityLookup);
+    }
+
 }

@@ -6,6 +6,7 @@ use DPRMC\ComplySciApi\Exceptions\NotAuthenticatedException;
 use DPRMC\ComplySciApi\Objects\DebugTrait;
 use DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity;
 use DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities;
+use DPRMC\ComplySciApi\Objects\ResponseSecurityLookup;
 use DPRMC\ComplySciApi\Objects\RestrictedSecurity;
 use DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities;
 use Psr\Http\Message\ResponseInterface;
@@ -246,7 +247,7 @@ class ComplySciApiClient {
         $PATH        = '/api/1/restricted-list/insert';
         $requestPath = $this->_getRequestPath( $PATH );
 
-        $arrayOfRestrictedSecurities = InsertableRestrictedSecurity::getArrayOfRestrictedSecuritiesToInsert($restrictedSecurities);
+        $arrayOfRestrictedSecurities = InsertableRestrictedSecurity::getArrayOfRestrictedSecuritiesToInsert( $restrictedSecurities );
 
         $jsonOptions = [
             "Records" => $arrayOfRestrictedSecurities,
@@ -263,6 +264,46 @@ class ComplySciApiClient {
         $responseAsArray = $this->_getArrayFromResponse( $response );
 
         return new ResponseInsertedRestrictedSecurities( $responseAsArray );
+    }
+
+
+    /**
+     * @param array $tickers
+     * @param string $currencyCode
+     * @param bool $includeInactiveSecurities
+     * @param bool $debug
+     * @return ResponseSecurityLookup
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @url https://na01.complysci.com/swagger/ui/index#!/Security/Security_SecuritiesSearch
+     */
+    public function requestSecurityLookupByTickers( array $tickers,
+                                                    string $currencyCode = 'USD',
+                                                    bool $includeInactiveSecurities = TRUE,
+                                                    bool $debug = FALSE ): ResponseSecurityLookup {
+        $this->_confirmWeAreAuthenticated();
+
+        // Get the number of total records available to us.
+        $PATH        = '/api/1/securities/security-lookup';
+        $requestPath = $this->_getRequestPath( $PATH );
+
+        $jsonOptions = [
+            'CurrencyCode'              => $currencyCode,
+            "Tickers"                   => $tickers,
+            'IncludeInactiveSecurities' => $includeInactiveSecurities,
+        ];
+
+        $response = $this->guzzleClient->post( $requestPath, [
+            'debug'   => $debug,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->accessToken,
+            ],
+            'json'    => $jsonOptions,
+        ] );
+
+        $responseAsArray = $this->_getArrayFromResponse( $response );
+
+        return new ResponseSecurityLookup( $responseAsArray );
     }
 
 }
