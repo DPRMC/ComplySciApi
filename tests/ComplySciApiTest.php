@@ -1,6 +1,8 @@
 <?php
 
 
+use DPRMC\ComplySciApi\Exceptions\InvalidInsertException;
+
 class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
     const DEBUG = FALSE;
@@ -125,7 +127,7 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
                                                                                                       self::DEBUG );
 
 
-            dd($responseInsertedRestrictedSecurities);
+            dd( $responseInsertedRestrictedSecurities );
             $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities::class,
                                      $responseInsertedRestrictedSecurities );
 
@@ -166,11 +168,34 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group comms
      */
     public function testRequestCommunications() {
-        $this->markTestSkipped("We probably aren't going to manage communications through ComplySci. This api call is unfinished.");
+        $this->markTestSkipped( "We probably aren't going to manage communications through ComplySci. This api call is unfinished." );
         $users                  = [ 'jschwab@deerparkrd.com' ];
         $createdAfter           = \Carbon\Carbon::create( 2023, 1, 1 );
         $createdBefore          = \Carbon\Carbon::create( 2023, 2, 1 );
         $ResponseSecurityLookup = self::$client->requestCommunications( $users, $createdAfter, $createdBefore, TRUE );
     }
 
+
+    /**
+     * @test
+     * @group invalid
+     */
+    public function testRequestInsertInvalidCusipShouldThrowException() {
+
+        $this->expectException( InvalidInsertException::class );
+        $invalidCusip         = '17417QEG4';
+        $listName             = 'Test Restricted List';
+        $restrictedSecurities = [];
+        $listAdministrator    = 'mdrennen@deerparkrd.com';
+        $groups               = [ 'All Employees' ];
+        $employees            = [];
+
+        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( $invalidCusip,
+                                                                                                                  \Carbon\Carbon::today(),
+                                                                                                                  $listName,
+                                                                                                                  $listAdministrator,
+                                                                                                                  $groups );
+
+        self::$client->requestInsertRestrictedSecurities( $restrictedSecurities, self::DEBUG );
+    }
 }

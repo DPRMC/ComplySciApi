@@ -3,6 +3,7 @@
 namespace DPRMC\ComplySciApi;
 
 use Carbon\Carbon;
+use DPRMC\ComplySciApi\Exceptions\InvalidInsertException;
 use DPRMC\ComplySciApi\Exceptions\NotAuthenticatedException;
 use DPRMC\ComplySciApi\Objects\DebugTrait;
 use DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity;
@@ -10,6 +11,7 @@ use DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities;
 use DPRMC\ComplySciApi\Objects\ResponseSecurityLookup;
 use DPRMC\ComplySciApi\Objects\RestrictedSecurity;
 use DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities;
+use GuzzleHttp\Exception\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 
 
@@ -235,9 +237,10 @@ class ComplySciApiClient {
 
 
     /**
-     * @param InsertableRestrictedSecurity[] $restrictedSecurities
+     * @param array $restrictedSecurities
      * @param bool $debug
      * @return ResponseInsertedRestrictedSecurities
+     * @throws InvalidInsertException
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -254,13 +257,26 @@ class ComplySciApiClient {
             "Records" => $arrayOfRestrictedSecurities,
         ];
 
-        $response = $this->guzzleClient->post( $requestPath, [
-            'debug'   => $debug,
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->accessToken,
-            ],
-            'json'    => $jsonOptions,
-        ] );
+        try {
+            $response = $this->guzzleClient->post( $requestPath, [
+                'debug'   => $debug,
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->accessToken,
+                ],
+                'json'    => $jsonOptions,
+            ] );
+        } catch ( \Exception $exception ) {
+            $response             = $exception->getResponse();
+            $responseBodyAsString = $response->getBody()->getContents();
+
+            if ( $this->_isInvalidInsertException( $responseBodyAsString ) ):
+                throw new InvalidInsertException( "One of the symbols was probably not in the ComplySci system. Try it from their web interface.",
+                                                  0,
+                                                  NULL,
+                                                  $arrayOfRestrictedSecurities );
+            endif;
+        }
+
 
         $responseAsArray = $this->_getArrayFromResponse( $response );
 
@@ -306,8 +322,6 @@ class ComplySciApiClient {
 
         return new ResponseSecurityLookup( $responseAsArray );
     }
-
-
 
 
     /**
@@ -381,5 +395,20 @@ class ComplySciApiClient {
         dd( $responseAsArray );
 
         //return new ResponseSecurityLookup( $responseAsArray );
+    }
+
+
+    /**
+     * This will return true if the SYMBOL being passed to ComplySci isn't in their system.
+     * @param $responseBodyAsString
+     * @return bool
+     * @example "Error encountered during inserting company list items. Issue: Error encountered during insert 2: 515, Level 16, State 2, Procedure dbo.usp_iCompanyListItem, Line 203, Issue: Cannot insert the value NULL into column 'ItemReferenceID', table 'PTCC.dbo.CompanyListItems'; column does not allow nulls. INSERT fails."
+     */
+    protected function _isInvalidInsertException( $responseBodyAsString ): bool {
+        $testString = "Cannot insert the value NULL into column 'ItemReferenceID'";
+        if ( str_contains( $responseBodyAsString, $testString ) ):
+            return TRUE;
+        endif;
+        return FALSE;
     }
 }
