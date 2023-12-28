@@ -33,8 +33,13 @@ class InsertableRestrictedSecurity {
 
     public function getArrayToInsert(): array {
 
+        //
         if ( CUSIP::isCUSIP( $this->symbol ) ):
             $tokenType = 'CUSIP';
+        elseif ( CUSIP::isISIN( $this->symbol ) ):
+            $tokenType = 'ISIN';
+        elseif ( CUSIP::isSEDOL( $this->symbol ) ):
+            $tokenType = 'SEDOL';
         else:
             $tokenType = 'Symbol';
         endif;
