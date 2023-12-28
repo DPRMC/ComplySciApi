@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bbcdabaed94cbcb834a50512309dcfa7",
+    "content-hash": "ac967f7907fdb3edc6009b4452b31d1d",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -96,6 +96,50 @@
                 }
             ],
             "time": "2023-06-16T13:40:37+00:00"
+        },
+        {
+            "name": "dprmc/cusip",
+            "version": "v1.0.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DPRMC/CUSIP.git",
+                "reference": "a1454ed00432c729bc1081ad65f3fd9191e345d5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DPRMC/CUSIP/zipball/a1454ed00432c729bc1081ad65f3fd9191e345d5",
+                "reference": "a1454ed00432c729bc1081ad65f3fd9191e345d5",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.3||^7.0"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "^2.0",
+                "phpunit/phpunit": "^7.5||^8.0||^9.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Drennen",
+                    "email": "michaeldrennen74@gmail.com"
+                }
+            ],
+            "description": "A php library for validating CUSIP codes.",
+            "support": {
+                "issues": "https://github.com/DPRMC/CUSIP/issues",
+                "source": "https://github.com/DPRMC/CUSIP/tree/v1.0.15"
+            },
+            "time": "2023-08-30T17:21:10+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

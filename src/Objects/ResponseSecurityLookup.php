@@ -54,4 +54,9 @@ class ResponseSecurityLookup {
             $this->Records[] = new SecurityRecord( $record );
         endforeach; // End looping through potentially multiple lists returned in result set.
     }
+
+
+    public function numRecords(): int {
+        return count($this->Records);
+    }
 }

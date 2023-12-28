@@ -4,6 +4,7 @@ namespace DPRMC\ComplySciApi\Objects\InsertableObjects;
 
 
 use Carbon\Carbon;
+use DPRMC\CUSIP;
 
 class InsertableRestrictedSecurity {
 
@@ -31,9 +32,16 @@ class InsertableRestrictedSecurity {
 
 
     public function getArrayToInsert(): array {
+
+        if ( CUSIP::isCUSIP( $this->symbol ) ):
+            $tokenType = 'CUSIP';
+        else:
+            $tokenType = 'Symbol';
+        endif;
+
         return [
-            'Symbol'            => $this->symbol,
-//            'StartDate'         => $this->startDate->toISOString(),
+            $tokenType          => $this->symbol,
+            //            'StartDate'         => $this->startDate->toISOString(),
             'StartDate'         => $this->startDate->toDateString(),
             'ListName'          => $this->listName,
             'ListAdministrator' => $this->listAdministrator,

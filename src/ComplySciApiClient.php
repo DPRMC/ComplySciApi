@@ -2,6 +2,7 @@
 
 namespace DPRMC\ComplySciApi;
 
+use Carbon\Carbon;
 use DPRMC\ComplySciApi\Exceptions\NotAuthenticatedException;
 use DPRMC\ComplySciApi\Objects\DebugTrait;
 use DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity;
@@ -277,10 +278,10 @@ class ComplySciApiClient {
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @url https://na01.complysci.com/swagger/ui/index#!/Security/Security_SecuritiesSearch
      */
-    public function requestSecurityLookupByTickers( array $tickers,
+    public function requestSecurityLookupByTickers( array  $tickers,
                                                     string $currencyCode = 'USD',
-                                                    bool $includeInactiveSecurities = TRUE,
-                                                    bool $debug = FALSE ): ResponseSecurityLookup {
+                                                    bool   $includeInactiveSecurities = TRUE,
+                                                    bool   $debug = FALSE ): ResponseSecurityLookup {
         $this->_confirmWeAreAuthenticated();
 
         // Get the number of total records available to us.
@@ -306,4 +307,79 @@ class ComplySciApiClient {
         return new ResponseSecurityLookup( $responseAsArray );
     }
 
+
+
+
+    /**
+     * UNFINISHED! MDD
+     * @param bool $debug
+     * @return void
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     *
+     * "Status": [
+     * "Open",
+     * "In Process"
+     * ],
+     * "CreatedAfter": "2023-12-08T15:52:20.2464073Z",
+     * "CreatedBefore": "2023-12-22T15:52:20.2464073Z",
+     * "UpdatedAfter": "2023-12-15T15:52:20.2464073Z",
+     * "UpdateBefore": "2023-12-22T15:52:20.2464073Z",
+     * "Groups": [
+     * "string"
+     * ],
+     * "GroupIds": [
+     * 0
+     * ],
+     * "Users": [
+     * "string"
+     * ],
+     * "UserIds": [
+     * 0
+     * ],
+     * "CurrentPage": 1,
+     * "PageSize": 100
+     */
+    public function requestCommunications( array $users = [], Carbon $createdAfter = NULL, Carbon $createdBefore = NULL, bool $debug = FALSE ) {
+        $this->_confirmWeAreAuthenticated();
+
+        $PATH        = '/api/2/communications';
+        $requestPath = $this->_getRequestPath( $PATH );
+
+
+        $jsonOptions = [];
+
+        if ( ! empty( $users ) ):
+            $jsonOptions[ 'Users' ] = $users;
+        endif;
+
+        if ( $createdAfter ):
+            $jsonOptions[ 'CreatedAfter' ] = $createdAfter->toISOString();
+        endif;
+
+        if ( $createdBefore ):
+            $jsonOptions[ 'CreatedBefore' ] = $createdBefore->toISOString();
+        endif;
+
+        try {
+            $response = $this->guzzleClient->post( $requestPath, [
+                'debug'   => $debug,
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->accessToken,
+                ],
+                'json'    => $jsonOptions,
+            ] );
+        } catch ( \GuzzleHttp\Exception\ClientException $e ) {
+
+            dd( $e->getResponse()->getBody()->getContents() );
+
+        }
+
+
+        $responseAsArray = $this->_getArrayFromResponse( $response );
+
+        dd( $responseAsArray );
+
+        //return new ResponseSecurityLookup( $responseAsArray );
+    }
 }
