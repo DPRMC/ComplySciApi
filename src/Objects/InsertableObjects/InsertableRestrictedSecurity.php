@@ -10,6 +10,7 @@ class InsertableRestrictedSecurity {
 
     public readonly string  $symbol;
     public readonly ?Carbon $startDate;
+    public readonly ?Carbon $endDate;
     public readonly string  $listName;
     public readonly string  $listAdministrator;
     public readonly array   $groups;
@@ -17,13 +18,15 @@ class InsertableRestrictedSecurity {
 
 
     public function __construct( string $symbol,
-                                 Carbon $startDate,
-                                 string $listName,
-                                 string $listAdministrator,
+                                 Carbon $startDate = NULL,
+                                 Carbon $endDate = NULL,
+                                 string $listName = '',
+                                 string $listAdministrator = '',
                                  array  $groups = [],
                                  array  $employees = [] ) {
         $this->symbol            = $symbol;
         $this->startDate         = $startDate;
+        $this->endDate           = $endDate;
         $this->listName          = $listName;
         $this->listAdministrator = $listAdministrator;
         $this->groups            = $groups;
@@ -46,8 +49,8 @@ class InsertableRestrictedSecurity {
 
         return [
             $tokenType          => $this->symbol,
-            //            'StartDate'         => $this->startDate->toISOString(),
-            'StartDate'         => $this->startDate->toDateString(),
+            'StartDate'         => $this->startDate?->toDateString(),
+            'EndDate'           => $this->endDate?->toDateString(),
             'ListName'          => $this->listName,
             'ListAdministrator' => $this->listAdministrator,
             'Groups'            => $this->groups,

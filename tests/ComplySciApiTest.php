@@ -116,6 +116,7 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
         $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( 'TSLA',
                                                                                                                   \Carbon\Carbon::today(),
+                                                                                                                  null,
                                                                                                                   $listName,
                                                                                                                   $listAdministrator,
                                                                                                                   $groups );
@@ -192,6 +193,7 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
         $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( $invalidCusip,
                                                                                                                   \Carbon\Carbon::today(),
+                                                                                                                  NULL,
                                                                                                                   $listName,
                                                                                                                   $listAdministrator,
                                                                                                                   $groups );
