@@ -8,6 +8,7 @@ use DPRMC\CUSIP;
 
 class InsertableRestrictedSecurity {
 
+    public readonly string  $companyName;
     public readonly string  $symbol;
     public readonly ?Carbon $startDate;
     public readonly ?Carbon $endDate;
@@ -17,13 +18,15 @@ class InsertableRestrictedSecurity {
     public readonly array   $employees;
 
 
-    public function __construct( string $symbol,
+    public function __construct( string $companyName = NULL,
+                                 string $symbol = NULL,
                                  Carbon $startDate = NULL,
                                  Carbon $endDate = NULL,
                                  string $listName = '',
                                  string $listAdministrator = '',
                                  array  $groups = [],
                                  array  $employees = [] ) {
+        $this->companyName       = $companyName;
         $this->symbol            = $symbol;
         $this->startDate         = $startDate;
         $this->endDate           = $endDate;
@@ -49,6 +52,7 @@ class InsertableRestrictedSecurity {
 
         return [
             $tokenType          => $this->symbol,
+            'CompanyName'       => $this->companyName,
             'StartDate'         => $this->startDate?->toDateString(),
             'EndDate'           => $this->endDate?->toDateString(),
             'ListName'          => $this->listName,
