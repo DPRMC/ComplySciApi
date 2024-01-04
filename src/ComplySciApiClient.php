@@ -79,7 +79,8 @@ class ComplySciApiClient {
         // Cast to a string: { ... }
         $body->seek( 0 );
 
-        return json_decode( $body, TRUE );
+        $jsonDecodedBody = json_decode( $body, TRUE );
+        return $jsonDecodedBody ?? [];
     }
 
 
