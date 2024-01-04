@@ -8,8 +8,8 @@ use DPRMC\CUSIP;
 
 class InsertableRestrictedSecurity {
 
-    public readonly string  $companyName;
-    public readonly string  $symbol;
+    public readonly ?string  $companyName;
+    public readonly ?string  $symbol;
     public readonly ?Carbon $startDate;
     public readonly ?Carbon $endDate;
     public readonly string  $listName;
