@@ -21,9 +21,9 @@ class ResponseInsertedRestrictedSecurities {
      * @param array $arrayFromApi
      */
     public function __construct( array $arrayFromApi = [] ) {
-        $this->totalCount = $arrayFromApi[ 'TotalCount' ];
-        $this->insert     = $arrayFromApi[ 'Insert' ];
-        $this->error      = $arrayFromApi[ 'Error' ];
+        $this->totalCount = $arrayFromApi[ 'TotalCount' ] ?? 0;
+        $this->insert     = $arrayFromApi[ 'Insert' ] ?? 0;
+        $this->error      = $arrayFromApi[ 'Error' ] ?? 0;
     }
 
 
