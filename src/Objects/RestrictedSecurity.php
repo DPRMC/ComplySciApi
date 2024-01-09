@@ -57,6 +57,7 @@ class RestrictedSecurity {
         $this->Symbol              = $record[ 'Symbol' ] ?? NULL;
         $this->CUSIP               = $record[ 'CUSIP' ] ?? NULL;
         $this->ISIN                = $record[ 'ISIN' ] ?? NULL;
+        $this->SEDOL                = $record[ 'SEDOL' ] ?? NULL;
         $this->RestrictedGroups    = $record[ 'RestrictedGroups' ] ?? NULL;
         $this->RestrictedUsers     = $record[ 'RestrictedUsers' ] ?? NULL;
         $this->CompanyName         = $record[ 'CompanyName' ] ?? NULL;

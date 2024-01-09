@@ -70,6 +70,8 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
         $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities::class, $ResultSet );
 
+        dd( $ResultSet );
+
 //
 //        /**
 //         * @var \DPRMC\ComplySciApi\Objects\RestrictedList $list
@@ -104,6 +106,23 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * @test
+     * @group gtfl
+     */
+    public function testGetSecurityByValorenInRestrictedListShouldReturn() {
+        $listName = 'Approved Securities List v2';
+        $ticker   = 'asdf';
+
+        $ResultSet = self::$client->requestRestrictedSecurities( $listName,
+                                                                 NULL,
+                                                                 TRUE,
+                                                                 self::DEBUG );
+
+        dd( $ResultSet );
+    }
+
+
+    /**
+     * @test
      * @group insert
      */
     public function testInsertRestrictedSecurities() {
@@ -114,9 +133,10 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
         $groups               = [ 'All Employees' ];
         $employees            = [];
 
-        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( 'TSLA',
+        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( NULL,
+                                                                                                                  'OCN',
                                                                                                                   \Carbon\Carbon::today(),
-                                                                                                                  null,
+                                                                                                                  NULL,
                                                                                                                   $listName,
                                                                                                                   $listAdministrator,
                                                                                                                   $groups );
@@ -163,6 +183,56 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
         $this->assertGreaterThanOrEqual( 2, $ResponseSecurityLookup->numRecords() );
     }
 
+
+    /**
+     * @test
+     * @group symbol
+     */
+    public function testRequestSecuritySearchWithSedolShouldReturn() {
+        $ResponseSecurityLookup = self::$client->requestSecurityLookupBySymbol( 'BYRD7L9', 'USD', TRUE, self::DEBUG );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseSecurityLookup::class, $ResponseSecurityLookup );
+        $this->assertGreaterThanOrEqual( 2, $ResponseSecurityLookup->numRecords() );
+    }
+
+    /**
+     * @test
+     * @group symbol
+     */
+    public function testRequestSecuritySearchWithIsinShouldReturn() {
+        $ResponseSecurityLookup = self::$client->requestSecurityLookupBySymbol( 'US15671L1098', 'USD', TRUE, self::DEBUG );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseSecurityLookup::class, $ResponseSecurityLookup );
+        $this->assertGreaterThanOrEqual( 2, $ResponseSecurityLookup->numRecords() );
+    }
+
+    /**
+     * @test
+     * @group symbol
+     */
+    public function testRequestSecuritySearchWithCusipShouldReturn() {
+        $ResponseSecurityLookup = self::$client->requestSecurityLookupBySymbol( '15671L109', 'USD', TRUE, self::DEBUG );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseSecurityLookup::class, $ResponseSecurityLookup );
+        $this->assertGreaterThanOrEqual( 2, $ResponseSecurityLookup->numRecords() );
+    }
+
+    /**
+     * @test
+     * @group symbol
+     */
+    public function testRequestSecuritySearchWithTickerShouldReturn() {
+        $ResponseSecurityLookup = self::$client->requestSecurityLookupBySymbol( 'CERC', 'USD', TRUE, self::DEBUG );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseSecurityLookup::class, $ResponseSecurityLookup );
+        $this->assertGreaterThanOrEqual( 1, $ResponseSecurityLookup->numRecords() );
+    }
+
+
+    /**
+     * @test
+     * @group gkkey
+     */
+    public function testRequestGkKeyShouldReturnString() {
+        $gkkey = self::$client->requestGkKeyBySymbol( 'CERC', 'USD', TRUE, self::DEBUG );
+        $this->assertIsString( $gkkey );
+    }
 
     /**
      * @test

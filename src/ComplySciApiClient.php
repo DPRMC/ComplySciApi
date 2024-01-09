@@ -4,6 +4,7 @@ namespace DPRMC\ComplySciApi;
 
 use Carbon\Carbon;
 use DPRMC\ComplySciApi\Exceptions\InvalidInsertException;
+use DPRMC\ComplySciApi\Exceptions\MultipleGkKeysForSymbolException;
 use DPRMC\ComplySciApi\Exceptions\NotAuthenticatedException;
 use DPRMC\ComplySciApi\Objects\DebugTrait;
 use DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity;
@@ -11,6 +12,9 @@ use DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities;
 use DPRMC\ComplySciApi\Objects\ResponseSecurityLookup;
 use DPRMC\ComplySciApi\Objects\RestrictedSecurity;
 use DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities;
+use DPRMC\ComplySciApi\Objects\SecurityRecord;
+use DPRMC\CUSIP;
+use DPRMC\UnknownSymbolException;
 use GuzzleHttp\Exception\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 
@@ -322,6 +326,133 @@ class ComplySciApiClient {
         $responseAsArray = $this->_getArrayFromResponse( $response );
 
         return new ResponseSecurityLookup( $responseAsArray );
+    }
+
+
+    /**
+     * @param string $symbol
+     * @param string $currencyCode
+     * @param bool $includeInactiveSecurities
+     * @param bool $debug
+     * @return ResponseSecurityLookup
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestSecurityLookupBySymbol( string $symbol,
+                                                   string $currencyCode = 'USD',
+                                                   bool   $includeInactiveSecurities = TRUE,
+                                                   bool   $debug = FALSE ): ResponseSecurityLookup {
+
+        $this->_confirmWeAreAuthenticated();
+
+        // Get the number of total records available to us.
+        $PATH        = '/api/1/securities/security-lookup';
+        $requestPath = $this->_getRequestPath( $PATH );
+
+        $jsonOptions = [
+            'CurrencyCode'              => $currencyCode,
+            'IncludeInactiveSecurities' => $includeInactiveSecurities,
+        ];
+
+        try {
+            $symbolType = CUSIP::getSymbolType( $symbol );
+        } catch ( UnknownSymbolException $exception ) {
+            $symbolType = 'SYMBOL'; // Probably a ticker like AAPL.
+        }
+
+        switch ( $symbolType ):
+            case 'SYMBOL':
+                $jsonOptions[ 'Tickers' ] = [ $symbol ];
+                break;
+            case 'CUSIP':
+                $jsonOptions[ 'Cusip' ] = $symbol;
+                break;
+            case 'ISIN':
+                $jsonOptions[ 'Isin' ] = $symbol;
+                break;
+            case 'SEDOL':
+                $jsonOptions[ 'Sedol' ] = $symbol;
+                break;
+        endswitch;
+
+        $response = $this->guzzleClient->post( $requestPath, [
+            'debug'   => $debug,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->accessToken,
+            ],
+            'json'    => $jsonOptions,
+        ] );
+
+        $responseAsArray = $this->_getArrayFromResponse( $response );
+
+        return new ResponseSecurityLookup( $responseAsArray );
+    }
+
+
+    /**
+     * @param string $symbol
+     * @param string $currencyCode
+     * @param bool $includeInactiveSecurities
+     * @param bool $debug
+     * @return string
+     * @throws MultipleGkKeysForSymbolException
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestGkKeyBySymbol( string $symbol,
+                                          string $currencyCode = 'USD',
+                                          bool   $includeInactiveSecurities = TRUE,
+                                          bool   $debug = FALSE ): string {
+
+        $ResponseSecurityLookup = $this->requestSecurityLookupBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
+
+        $gkKeys = [];
+        /**
+         * @var SecurityRecord $Record
+         */
+        foreach ( $ResponseSecurityLookup->Records as $i => $Record ):
+            $gkKeys[] = $Record->GKKey;
+        endforeach;
+
+        $gkKeys = array_unique( $gkKeys );
+
+        if ( 1 == count( $gkKeys ) ):
+            return $gkKeys[ 0 ];
+        endif;
+
+        throw new MultipleGkKeysForSymbolException( "There were multiple GkKeys returned for a given symbol.", 0, NULL, $symbol, $gkKeys );
+    }
+
+
+    /**
+     * @param string $restrictedListName
+     * @param string $symbol
+     * @param string $currencyCode
+     * @param bool $includeInactiveSecurities
+     * @param bool $debug
+     * @return bool
+     * @throws MultipleGkKeysForSymbolException
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function securityExistsInRestrictedList( string $restrictedListName,
+                                                    string $symbol,
+                                                    string $currencyCode = 'USD',
+                                                    bool   $includeInactiveSecurities = TRUE,
+                                                    bool   $debug = FALSE ): bool {
+        $gkkey = $this->requestGkKeyBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
+
+        $ResponseGetRestrictedSecurities = $this->requestRestrictedSecurities( $restrictedListName, NULL, FALSE, $debug );
+
+        /**
+         * @var SecurityRecord $Record
+         */
+        foreach ( $ResponseGetRestrictedSecurities->Lists[ $restrictedListName ]->Records as $Record ):
+            if ( $gkkey == $Record->GKKey ):
+                return TRUE;
+            endif;
+        endforeach;
+        return FALSE;
     }
 
 
