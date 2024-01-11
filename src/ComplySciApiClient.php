@@ -496,7 +496,7 @@ class ComplySciApiClient {
                                                            string $currencyCode = 'USD',
                                                            bool   $includeInactiveSecurities = TRUE,
                                                            bool   $debug = FALSE ): bool {
-        $gkkey = $this->requestGkKeyBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
+        $gkkeys = $this->requestGetAllGkKeysBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
 
         $ResponseGetRestrictedSecurities = $this->requestRestrictedSecurities( $restrictedListName, NULL, FALSE, $debug );
 
@@ -504,7 +504,7 @@ class ComplySciApiClient {
          * @var SecurityRecord $Record
          */
         foreach ( $ResponseGetRestrictedSecurities->Lists[ $restrictedListName ]->Records as $Record ):
-            if ( $gkkey == $Record->GKKey ):
+            if ( in_array( $Record->GKKey, $gkkeys ) ):
                 return TRUE;
             endif;
         endforeach;
