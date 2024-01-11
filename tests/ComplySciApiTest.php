@@ -7,6 +7,11 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
     const DEBUG = FALSE;
 
+    const TEST_TICKER   = 'AAPL';
+    const TEST_TICKER_2 = 'LODE';
+    const TEST_VALOREN  = '908440';
+    const TEST_CUSIP    = '037833100';
+
     public static \DPRMC\ComplySciApi\ComplySciApiClient $client;
 
     public static function setUpBeforeClass(): void {
@@ -32,6 +37,48 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
         $this->assertIsNumeric( self::$client->expiresIn );
     }
 
+
+    /**
+     * @test
+     * @group insert
+     */
+    public function testInsertRestrictedSecurities() {
+
+        $listName             = 'Test Restricted List';
+        $restrictedSecurities = [];
+        $listAdministrator    = 'mdrennen@deerparkrd.com';
+        $groups               = [ 'All Employees' ];
+        $employees            = [];
+
+        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( NULL,
+                                                                                                                  self::TEST_TICKER,
+                                                                                                                  \Carbon\Carbon::today(),
+                                                                                                                  NULL,
+                                                                                                                  $listName,
+                                                                                                                  $listAdministrator,
+                                                                                                                  $groups );
+
+        try {
+            $responseInsertedRestrictedSecurities = self::$client->requestInsertRestrictedSecurities( $restrictedSecurities,
+                                                                                                      self::DEBUG );
+
+            $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities::class,
+                                     $responseInsertedRestrictedSecurities );
+
+            $this->assertIsInt( $responseInsertedRestrictedSecurities->totalCount );
+            $this->assertGreaterThan( 0, $responseInsertedRestrictedSecurities->totalCount );
+        } catch ( GuzzleHttp\Exception\ClientException $e ) {
+            $response             = $e->getResponse();
+            $responseBodyAsString = $response->getBody()->getContents();
+            dump( $responseBodyAsString );
+        }
+
+        $ResponseGetRestrictedSecurities = self::$client->requestRestrictedSecurities( $listName, NULL, TRUE, self::DEBUG );
+        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities::class,
+                                 $ResponseGetRestrictedSecurities );
+        $this->assertGreaterThan( 0, $ResponseGetRestrictedSecurities->numSecuritiesInAllLists() );
+
+    }
 
     /**
      * @test
@@ -70,7 +117,7 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
         $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities::class, $ResultSet );
 
-        dd( $ResultSet );
+        // dd( $ResultSet );
 
 //
 //        /**
@@ -106,67 +153,36 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * @test
-     * @group gtfl
+     * @group sym
      */
-    public function testGetSecurityByValorenInRestrictedListShouldReturn() {
-        $listName = 'Approved Securities List v2';
-        $ticker   = 'asdf';
+    public function testGetRestrictedListRecordsBySymbolShouldReturnArray() {
+        $symbol                           = 'ASPS';
+        $arrayOfRestrictedSecurityRecords = self::$client->requestGetRestrictedListRecordsBySymbol(
+            $symbol,
+            'USD',
+            TRUE,
+            self::DEBUG );
 
-        $ResultSet = self::$client->requestRestrictedSecurities( $listName,
-                                                                 NULL,
-                                                                 TRUE,
-                                                                 self::DEBUG );
+        $this->assertIsArray( $arrayOfRestrictedSecurityRecords );
 
-        dd( $ResultSet );
     }
 
 
     /**
      * @test
-     * @group insert
+     * @group exception
      */
-    public function testInsertRestrictedSecurities() {
-
-        $listName             = 'Test Restricted List';
-        $restrictedSecurities = [];
-        $listAdministrator    = 'mdrennen@deerparkrd.com';
-        $groups               = [ 'All Employees' ];
-        $employees            = [];
-
-        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( NULL,
-                                                                                                                  'OCN',
-                                                                                                                  \Carbon\Carbon::today(),
-                                                                                                                  NULL,
-                                                                                                                  $listName,
-                                                                                                                  $listAdministrator,
-                                                                                                                  $groups );
-
-        try {
-
-            //dd($restrictedSecurities);
-            $responseInsertedRestrictedSecurities = self::$client->requestInsertRestrictedSecurities( $restrictedSecurities,
-                                                                                                      self::DEBUG );
-
-
-            dd( $responseInsertedRestrictedSecurities );
-            $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities::class,
-                                     $responseInsertedRestrictedSecurities );
-
-            $this->assertIsInt( $responseInsertedRestrictedSecurities->totalCount );
-            $this->assertGreaterThan( 0, $responseInsertedRestrictedSecurities->totalCount );
-        } catch ( GuzzleHttp\Exception\ClientException $e ) {
-            $response             = $e->getResponse();
-            $responseBodyAsString = $response->getBody()->getContents();
-            dump( $responseBodyAsString );
-        }
-
-
-        $ResponseGetRestrictedSecurities = self::$client->requestRestrictedSecurities( $listName, NULL, TRUE, self::DEBUG );
-        $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities::class,
-                                 $ResponseGetRestrictedSecurities );
-        $this->assertGreaterThan( 0, $ResponseGetRestrictedSecurities->numSecuritiesInAllLists() );
-
+    public function testSymbolWithMultipleGkKeysShouldThrowException() {
+        $this->expectException( \DPRMC\ComplySciApi\Exceptions\NoGkKeyForSymbolException::class );
+        $symbol = 'OCN';
+        self::$client->requestGkKeyBySymbol(
+            $symbol,
+            TRUE,
+            self::DEBUG );
     }
+
+
+
 
 
 
@@ -219,7 +235,7 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group symbol
      */
     public function testRequestSecuritySearchWithTickerShouldReturn() {
-        $ResponseSecurityLookup = self::$client->requestSecurityLookupBySymbol( 'CERC', 'USD', TRUE, self::DEBUG );
+        $ResponseSecurityLookup = self::$client->requestSecurityLookupBySymbol( self::TEST_TICKER, 'USD', TRUE, self::DEBUG );
         $this->assertInstanceOf( \DPRMC\ComplySciApi\Objects\ResponseSecurityLookup::class, $ResponseSecurityLookup );
         $this->assertGreaterThanOrEqual( 1, $ResponseSecurityLookup->numRecords() );
     }
@@ -230,7 +246,10 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
      * @group gkkey
      */
     public function testRequestGkKeyShouldReturnString() {
-        $gkkey = self::$client->requestGkKeyBySymbol( 'CERC', 'USD', TRUE, self::DEBUG );
+        $gkkey = self::$client->requestGkKeyBySymbol( self::TEST_TICKER_2,
+                                                      'USD',
+                                                      FALSE,
+                                                      self::DEBUG );
         $this->assertIsString( $gkkey );
     }
 
@@ -254,6 +273,7 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
     public function testRequestInsertInvalidCusipShouldThrowException() {
 
         $this->expectException( InvalidInsertException::class );
+        $companyName          = NULL;
         $invalidCusip         = '17417QEG4';
         $listName             = 'Test Restricted List';
         $restrictedSecurities = [];
@@ -261,7 +281,8 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
         $groups               = [ 'All Employees' ];
         $employees            = [];
 
-        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( $invalidCusip,
+        $restrictedSecurities[] = new \DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity( $companyName,
+                                                                                                                  $invalidCusip,
                                                                                                                   \Carbon\Carbon::today(),
                                                                                                                   NULL,
                                                                                                                   $listName,

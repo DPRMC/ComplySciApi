@@ -43,9 +43,15 @@ class RestrictedSecurity {
 
 
     /**
+     * @var string|null Let's try this as a public readonly now.
+     */
+    public readonly ?string $ListName;
+
+
+    /**
      * @param array $record
      */
-    public function __construct( array $record ) {
+    public function __construct( array $record, string $listName ) {
         $this->SecurityId          = $record[ 'SecurityId' ] ?? NULL;
         $this->StartDate           = isset( $record[ 'StartDate' ] ) ? Carbon::parse( $record[ 'StartDate' ] ) : NULL;
         $this->EffectiveTime       = $record[ 'EffectiveTime' ] ?? NULL;
@@ -57,7 +63,7 @@ class RestrictedSecurity {
         $this->Symbol              = $record[ 'Symbol' ] ?? NULL;
         $this->CUSIP               = $record[ 'CUSIP' ] ?? NULL;
         $this->ISIN                = $record[ 'ISIN' ] ?? NULL;
-        $this->SEDOL                = $record[ 'SEDOL' ] ?? NULL;
+        $this->SEDOL               = $record[ 'SEDOL' ] ?? NULL;
         $this->RestrictedGroups    = $record[ 'RestrictedGroups' ] ?? NULL;
         $this->RestrictedUsers     = $record[ 'RestrictedUsers' ] ?? NULL;
         $this->CompanyName         = $record[ 'CompanyName' ] ?? NULL;
@@ -77,6 +83,7 @@ class RestrictedSecurity {
         $this->CustomField06       = $record[ 'CustomField06' ] ?? NULL;
         $this->CustomField07       = $record[ 'CustomField07' ] ?? NULL;
         $this->CustomField08       = $record[ 'CustomField08' ] ?? NULL;
+        $this->ListName            = $listName;
     }
 
 
@@ -85,6 +92,16 @@ class RestrictedSecurity {
         $startDate  = $this->StartDate->toDateString();
 
         return md5( $securityId . $listName . $startDate );
+    }
+
+
+    /**
+     * Setter for the ListName property. Not sure this is needed anymore.
+     * @param string $listName
+     * @return void
+     */
+    public function setListName( string $listName ): void {
+        $this->ListName = $listName;
     }
 
 }

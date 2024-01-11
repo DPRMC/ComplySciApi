@@ -5,11 +5,13 @@ namespace DPRMC\ComplySciApi;
 use Carbon\Carbon;
 use DPRMC\ComplySciApi\Exceptions\InvalidInsertException;
 use DPRMC\ComplySciApi\Exceptions\MultipleGkKeysForSymbolException;
+use DPRMC\ComplySciApi\Exceptions\NoGkKeyForSymbolException;
 use DPRMC\ComplySciApi\Exceptions\NotAuthenticatedException;
 use DPRMC\ComplySciApi\Objects\DebugTrait;
 use DPRMC\ComplySciApi\Objects\InsertableObjects\InsertableRestrictedSecurity;
 use DPRMC\ComplySciApi\Objects\ResponseInsertedRestrictedSecurities;
 use DPRMC\ComplySciApi\Objects\ResponseSecurityLookup;
+use DPRMC\ComplySciApi\Objects\RestrictedList;
 use DPRMC\ComplySciApi\Objects\RestrictedSecurity;
 use DPRMC\ComplySciApi\Objects\ResponseGetRestrictedSecurities;
 use DPRMC\ComplySciApi\Objects\SecurityRecord;
@@ -390,6 +392,8 @@ class ComplySciApiClient {
 
 
     /**
+     * Will return the GK Key as a string if there is only one for a symbol.
+     * Otherwise will throw an exception.
      * @param string $symbol
      * @param string $currencyCode
      * @param bool $includeInactiveSecurities
@@ -404,6 +408,40 @@ class ComplySciApiClient {
                                           bool   $includeInactiveSecurities = TRUE,
                                           bool   $debug = FALSE ): string {
 
+        $gkKeys = $this->requestGetAllGkKeysBySymbol( $symbol,
+                                                      $currencyCode,
+                                                      $includeInactiveSecurities,
+                                                      $debug );
+
+        $gkKeys = array_unique( $gkKeys );
+
+        if ( 1 == count( $gkKeys ) ):
+            return $gkKeys[ 0 ];
+        endif;
+
+        if ( empty( $gkKeys ) ):
+            throw new NoGkKeyForSymbolException( "There were no GkKeys returned for a given symbol [" . $symbol . "]", 0, NULL, $symbol );
+        endif;
+
+        throw new MultipleGkKeysForSymbolException( "There were multiple GkKeys returned for a given symbol [" . $symbol . "].", 0, NULL, $symbol, $gkKeys );
+    }
+
+
+    /**
+     * Will return ALL GK Keys found for a given symbol.
+     * @param string $symbol
+     * @param string $currencyCode
+     * @param bool $includeInactiveSecurities
+     * @param bool $debug
+     * @return string
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestGetAllGkKeysBySymbol( string $symbol,
+                                                 string $currencyCode = 'USD',
+                                                 bool   $includeInactiveSecurities = TRUE,
+                                                 bool   $debug = FALSE ): array {
+
         $ResponseSecurityLookup = $this->requestSecurityLookupBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
 
         $gkKeys = [];
@@ -414,13 +452,31 @@ class ComplySciApiClient {
             $gkKeys[] = $Record->GKKey;
         endforeach;
 
-        $gkKeys = array_unique( $gkKeys );
+        return $gkKeys;
+    }
 
-        if ( 1 == count( $gkKeys ) ):
-            return $gkKeys[ 0 ];
+
+    /**
+     * @param string $symbol
+     * @param string $currencyCode
+     * @param bool $includeInactiveSecurities
+     * @param bool $debug
+     * @return array|string
+     * @throws NoGkKeyForSymbolException
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestGetFirstGkKeyBySymbol( string $symbol,
+                                                  string $currencyCode = 'USD',
+                                                  bool   $includeInactiveSecurities = TRUE,
+                                                  bool   $debug = FALSE ): string {
+
+        $gkKeys = $this->requestGetAllGkKeysBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
+        if ( empty( $gkKeys ) ):
+            throw new NoGkKeyForSymbolException( "There were no GkKeys returned for a given symbol [" . $symbol . "]", 0, NULL, $symbol );
         endif;
 
-        throw new MultipleGkKeysForSymbolException( "There were multiple GkKeys returned for a given symbol.", 0, NULL, $symbol, $gkKeys );
+        return $gkKeys[ 0 ];
     }
 
 
@@ -435,11 +491,11 @@ class ComplySciApiClient {
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function securityExistsInRestrictedList( string $restrictedListName,
-                                                    string $symbol,
-                                                    string $currencyCode = 'USD',
-                                                    bool   $includeInactiveSecurities = TRUE,
-                                                    bool   $debug = FALSE ): bool {
+    public function requestSecurityExistsInRestrictedList( string $restrictedListName,
+                                                           string $symbol,
+                                                           string $currencyCode = 'USD',
+                                                           bool   $includeInactiveSecurities = TRUE,
+                                                           bool   $debug = FALSE ): bool {
         $gkkey = $this->requestGkKeyBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
 
         $ResponseGetRestrictedSecurities = $this->requestRestrictedSecurities( $restrictedListName, NULL, FALSE, $debug );
@@ -453,6 +509,48 @@ class ComplySciApiClient {
             endif;
         endforeach;
         return FALSE;
+    }
+
+
+    /**
+     * Returns an array of every Restricted Security record in every Restricted Security list by symbol.
+     * @param string $symbol
+     * @param string $currencyCode
+     * @param bool $includeInactiveSecurities
+     * @param bool $debug
+     * @return array
+     * @throws MultipleGkKeysForSymbolException
+     * @throws NotAuthenticatedException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestGetRestrictedListRecordsBySymbol(
+        string $symbol,
+        string $currencyCode = 'USD',
+        bool   $includeInactiveSecurities = TRUE,
+        bool   $debug = FALSE ): array {
+
+        $restrictedListRecordsBySymbol = [];
+
+        $gkkey = $this->requestGkKeyBySymbol( $symbol, $currencyCode, $includeInactiveSecurities, $debug );
+
+        $ResponseGetRestrictedSecurities = $this->requestRestrictedSecurities( NULL, NULL, FALSE, $debug );
+
+        /**
+         * @var RestrictedList $restrictedList
+         */
+        foreach ( $ResponseGetRestrictedSecurities->Lists as $restrictedListName => $restrictedList ):
+            /**
+             * @var RestrictedSecurity $restrictedSecurity
+             */
+            foreach ( $restrictedList->Records as $restrictedSecurity ):
+                if ( $gkkey == $restrictedSecurity->GKKey ):
+//                    $restrictedSecurity->setListName($restrictedListName);
+                    $restrictedListRecordsBySymbol[] = $restrictedSecurity;
+                endif;
+            endforeach;
+        endforeach;
+
+        return $restrictedListRecordsBySymbol;
     }
 
 

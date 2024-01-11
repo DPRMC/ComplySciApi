@@ -35,7 +35,7 @@ class RestrictedList {
 
         $records = [];
         foreach ( $list[ 'Records' ] as $record ):
-            $RestrictedSecurity = new RestrictedSecurity( $record );
+            $RestrictedSecurity = new RestrictedSecurity( $record, $this->ListName );
             $uniqueId           = $RestrictedSecurity->getUniqueKeyForRecord( $list[ 'ListName' ] );
             $records[$uniqueId] = $RestrictedSecurity;
         endforeach;
