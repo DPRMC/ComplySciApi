@@ -291,4 +291,45 @@ class ComplySciApiTest extends \PHPUnit\Framework\TestCase {
 
         self::$client->requestInsertRestrictedSecurities( $restrictedSecurities, self::DEBUG );
     }
+
+
+    /**
+     * @test
+     * @group ge
+     */
+    public function testInsertGiftAndEntertainmentRecord() {
+        $templateName   = 'Test G&E';
+        $userName       = 'mdrennen@deerparkrd.com';
+        $geDateTime     = \Carbon\Carbon::create(2024,11,07,12,30,45);
+        $requestType    = 'requesttype';
+        $thirdParty     = 'thridparty';
+        $value          = 1;
+        $description    = 'dsecriptio';
+        $relationship   = 'relastio';
+        $currency       = 'USD';
+        $rfcRegulations = 'regulatorsmountup';
+        $debug          = TRUE;
+
+        //dump(self::$client->accessToken);
+
+        try {
+            $response       = self::$client->requestInsertGiftAndEntertainmentRecord( $templateName,
+                                                                                      $userName,
+                                                                                      $geDateTime,
+                                                                                      $requestType,
+                                                                                      $thirdParty,
+                                                                                      $value,
+                                                                                      $description,
+                                                                                      $relationship,
+                                                                                      $currency,
+                                                                                      $rfcRegulations,
+                                                                                      $debug );
+            dump( $response );
+
+        } catch (Exception $exception){
+            dump( $exception->getResponse()->getBody()->getContents() );
+        }
+
+    }
+
 }

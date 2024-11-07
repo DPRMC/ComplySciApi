@@ -56,6 +56,7 @@ class ComplySciApiClient {
 
     /**
      * @param string $path
+     *
      * @return string
      */
     protected function _getRequestPath( string $path ): string {
@@ -69,7 +70,7 @@ class ComplySciApiClient {
      * @throws NotAuthenticatedException
      */
     protected function _confirmWeAreAuthenticated(): void {
-        if ( ! isset( $this->accessToken ) ):
+        if ( !isset( $this->accessToken ) ):
             throw new NotAuthenticatedException( "Be sure to run requestAccessToken() first to authenticate." );
         endif;
     }
@@ -77,6 +78,7 @@ class ComplySciApiClient {
 
     /**
      * @param ResponseInterface $response
+     *
      * @return array
      */
     protected function _getArrayFromResponse( ResponseInterface $response ): array {
@@ -93,9 +95,11 @@ class ComplySciApiClient {
     /**
      * The first step in accessing the ComplySci API.
      * We need an access token.
+     *
      * @param string $username
      * @param string $password
-     * @param bool $debug
+     * @param bool   $debug
+     *
      * @return void
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -121,7 +125,9 @@ class ComplySciApiClient {
 
     /**
      * You would use this method if you were going to request the Restricted Security records in batches.
+     *
      * @param bool $debug
+     *
      * @return int The total number of Restricted Security records in the system.
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -153,10 +159,11 @@ class ComplySciApiClient {
 
     /**
      * @param string|NULL $listName
-     * @param int $currentPage
-     * @param int $pageSize
-     * @param bool $isActiveList
-     * @param bool $debug
+     * @param int         $currentPage
+     * @param int         $pageSize
+     * @param bool        $isActiveList
+     * @param bool        $debug
+     *
      * @return ResponseGetRestrictedSecurities
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -198,9 +205,10 @@ class ComplySciApiClient {
 
     /**
      * @param string|NULL $listName
-     * @param int|NULL $limit
-     * @param bool $isActiveList
-     * @param bool $debug
+     * @param int|NULL    $limit
+     * @param bool        $isActiveList
+     * @param bool        $debug
+     *
      * @return ResponseGetRestrictedSecurities
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -245,7 +253,8 @@ class ComplySciApiClient {
 
     /**
      * @param array $restrictedSecurities
-     * @param bool $debug
+     * @param bool  $debug
+     *
      * @return ResponseInsertedRestrictedSecurities
      * @throws InvalidInsertException
      * @throws NotAuthenticatedException
@@ -292,10 +301,11 @@ class ComplySciApiClient {
 
 
     /**
-     * @param array $tickers
+     * @param array  $tickers
      * @param string $currencyCode
-     * @param bool $includeInactiveSecurities
-     * @param bool $debug
+     * @param bool   $includeInactiveSecurities
+     * @param bool   $debug
+     *
      * @return ResponseSecurityLookup
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -334,8 +344,9 @@ class ComplySciApiClient {
     /**
      * @param string $symbol
      * @param string $currencyCode
-     * @param bool $includeInactiveSecurities
-     * @param bool $debug
+     * @param bool   $includeInactiveSecurities
+     * @param bool   $debug
+     *
      * @return ResponseSecurityLookup
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -394,10 +405,12 @@ class ComplySciApiClient {
     /**
      * Will return the GK Key as a string if there is only one for a symbol.
      * Otherwise will throw an exception.
+     *
      * @param string $symbol
      * @param string $currencyCode
-     * @param bool $includeInactiveSecurities
-     * @param bool $debug
+     * @param bool   $includeInactiveSecurities
+     * @param bool   $debug
+     *
      * @return string
      * @throws MultipleGkKeysForSymbolException
      * @throws NotAuthenticatedException
@@ -429,10 +442,12 @@ class ComplySciApiClient {
 
     /**
      * Will return ALL GK Keys found for a given symbol.
+     *
      * @param string $symbol
      * @param string $currencyCode
-     * @param bool $includeInactiveSecurities
-     * @param bool $debug
+     * @param bool   $includeInactiveSecurities
+     * @param bool   $debug
+     *
      * @return string
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -459,8 +474,9 @@ class ComplySciApiClient {
     /**
      * @param string $symbol
      * @param string $currencyCode
-     * @param bool $includeInactiveSecurities
-     * @param bool $debug
+     * @param bool   $includeInactiveSecurities
+     * @param bool   $debug
+     *
      * @return array|string
      * @throws NoGkKeyForSymbolException
      * @throws NotAuthenticatedException
@@ -484,8 +500,9 @@ class ComplySciApiClient {
      * @param string $restrictedListName
      * @param string $symbol
      * @param string $currencyCode
-     * @param bool $includeInactiveSecurities
-     * @param bool $debug
+     * @param bool   $includeInactiveSecurities
+     * @param bool   $debug
+     *
      * @return bool
      * @throws MultipleGkKeysForSymbolException
      * @throws NotAuthenticatedException
@@ -514,10 +531,12 @@ class ComplySciApiClient {
 
     /**
      * Returns an array of every Restricted Security record in every Restricted Security list by symbol.
+     *
      * @param string $symbol
      * @param string $currencyCode
-     * @param bool $includeInactiveSecurities
-     * @param bool $debug
+     * @param bool   $includeInactiveSecurities
+     * @param bool   $debug
+     *
      * @return array
      * @throws MultipleGkKeysForSymbolException
      * @throws NotAuthenticatedException
@@ -555,8 +574,73 @@ class ComplySciApiClient {
 
 
     /**
+     * @param string         $templateName
+     * @param string         $userName
+     * @param \Carbon\Carbon $geDateTime
+     * @param string         $requestType
+     * @param string         $thirdParty
+     * @param float          $value
+     * @param string         $description
+     * @param string         $relationship
+     * @param string         $currency
+     * @param string         $rfcRegulations
+     * @param bool           $debug
+     *
+     * @return \DPRMC\ComplySciApi\Objects\ResponseSecurityLookup
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function requestInsertGiftAndEntertainmentRecord(string $templateName,
+                                                            string $userName,
+                                                            Carbon $geDateTime,
+                                                            string $requestType,
+                                                            string $thirdParty,
+                                                            float $value,
+                                                            string $description,
+                                                            string $relationship,
+                                                            string $currency,
+                                                            string $rfcRegulations,
+                                                            bool $debug = FALSE ) {
+        // Get the number of total records available to us.
+        $PATH        = '/api/1/gift-entertainment';
+        $requestPath = $this->_getRequestPath( $PATH );
+
+        $jsonOptions = [
+            'TemplateName'              => $templateName,
+            "UserName"                  => $userName,
+            'Gift / Entertainment Date' => $geDateTime->toDateString(),
+            'Request Type'              => $requestType,
+            'Third Party'               => $thirdParty,
+            'Value'                     => $value,
+            'Description'               => $description,
+            'Relationship'              => $relationship,
+            'Approximate Time'          => $geDateTime->toTimeString(),
+            'Currency'                  => $currency,
+            'RFC Regulations'           => $rfcRegulations,
+        ];
+
+        var_dump(json_encode($jsonOptions));
+
+        $response = $this->guzzleClient->post( $requestPath, [
+            'debug'   => $debug,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->accessToken,
+                'body' => json_encode( $jsonOptions )
+            ],
+            //'json'    => $jsonOptions,
+        ] );
+
+        $responseAsArray = $this->_getArrayFromResponse( $response );
+
+        dd($responseAsArray);
+        return new ResponseSecurityLookup( $responseAsArray );
+    }
+
+
+    /**
      * UNFINISHED! MDD
+     *
      * @param bool $debug
+     *
      * @return void
      * @throws NotAuthenticatedException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -593,7 +677,7 @@ class ComplySciApiClient {
 
         $jsonOptions = [];
 
-        if ( ! empty( $users ) ):
+        if ( !empty( $users ) ):
             $jsonOptions[ 'Users' ] = $users;
         endif;
 
@@ -630,7 +714,9 @@ class ComplySciApiClient {
 
     /**
      * This will return true if the SYMBOL being passed to ComplySci isn't in their system.
+     *
      * @param $responseBodyAsString
+     *
      * @return bool
      * @example "Error encountered during inserting company list items. Issue: Error encountered during insert 2: 515, Level 16, State 2, Procedure dbo.usp_iCompanyListItem, Line 203, Issue: Cannot insert the value NULL into column 'ItemReferenceID', table 'PTCC.dbo.CompanyListItems'; column does not allow nulls. INSERT fails."
      */
